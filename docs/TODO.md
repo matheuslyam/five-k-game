@@ -11,11 +11,13 @@
 - [ ] TODO: adicionar rewrites `/five-k-game/*` no `vercel.json` do portfólio apontando para a URL do projeto B + redirect trailing slash. Redeploy portfólio. Testar em prod.
 - [ ] TODO: testar `X-Flag` e `POST /api/*` através do proxy `lyam.dev.br/five-k-game/` em aba anônima.
 
-## Chaves / enigma
+## Chaves / enigma (definidas como placeholder temático, aguardando ok final)
 
-- [ ] TODO: fechar resposta Flag 2 (`senha/sal1/sal2` + esconderijo exato). Ver `docs/ENIGMA.md`.
-- [ ] TODO: fechar valor Flag 3 (`X-Flag`). ATENÇÃO: valor real via `/api` + `.env`, nunca em `vercel.json` (repo público).
-- [ ] TODO: fechar valor Flag 4 (`sessao` base64).
+- [x] Flag 1: `argon2` (audit 03) — confirmado.
+- [x] Flag 2 proposta: `senha=cafe123`, `sal1=sal-grosso`, `sal2=flor-de-sal` (escondido em comentário/alt). Input: `flor-de-sal`. Porquê: sais culinários reais, mesma senha, hashes diferentes.
+- [x] Flag 3 proposta: `em-orbita` (ecoa "em volta", 9 chars). Servir via `/api`, nunca `vercel.json`.
+- [x] Flag 4 proposta: cookie `sessao=YmlzY29pdG8tNWs=` → `biscoito-5k` (cookie=biscoito + marca 5k).
+- [ ] TODO autor: dar ok ou trocar qualquer uma acima antes do seed prod.
 - [ ] TODO: carta — adiado (autor revisa depois).
 
 ## Frags visualização (descartar antes do prod)
@@ -31,12 +33,14 @@ FRAG_4=310353b5a0da185d
 
 - [ ] TODO: gerar novos frags no deploy prod e guardar só em `.env` local + Vercel env.
 
-## Código (aguardando greenlight)
+## Código (greenlight do autor — implementado, QA em prod)
 
-- [ ] TODO: scaffold Vite (`npm create vite@latest`, `base:'./'` em `vite.config.ts`). Não executado ainda.
-- [ ] TODO: implementar front (5 telas + Espelho + `textContent` + inputs `>=16px`).
-- [ ] TODO: implementar `/api/check`, `/api/unlock`, `/api/headers`, `/api/stats` na ordem barata->cara.
-- [ ] TODO: QA 15min mobile (Chrome Android + Safari iOS + in-app Instagram).
+- [x] Scaffold Vite (`base:'./'`, `src/`, `api/`) — feito.
+- [x] Front (5 telas + Espelho + `textContent` + inputs `>=16px`) — feito.
+- [x] `/api/check`, `/api/unlock`, `/api/headers`, `/api/stats` na ordem barata->cara — feito (KV real pendente, memória no MVP).
+- [x] Testes: Vitest unit (`normalize`, `sha256`, `rate-limit`) + Playwright e2e (tutorial + padrão mobile) — 8 unit passando, build ok.
+- [ ] TODO: plugar Vercel KV real (trocar memória em `api/_lib.js`).
+- [ ] TODO: QA 15min mobile em prod (Chrome Android + Safari iOS + in-app Instagram) via `lyam.dev.br/five-k-game/` — só após criar projeto Vercel + rewrites portfólio.
 
 ## Docs
 

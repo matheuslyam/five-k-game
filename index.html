@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>five-k-game — escondi 5 flags</title>
+  <meta name="description" content="Mini-game enigma estilo CTF para comemorar 5k follows. Ache 5 flags e abra a carta." />
+  <link rel="stylesheet" href="./src/style.css" />
+  <!-- sal2: flor-de-sal -->
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero">
+      <p class="kicker">5k de follows — mini-game</p>
+      <h1>Escondi 5 flags</h1>
+      <p class="sub">Um audit vazou. Reconstrua a chave de 4 partes e abra a carta.</p>
+      <p class="progress" aria-live="polite">Progresso: <strong id="progress">0/5</strong></p>
+      <p class="fmt">Formato sempre <code>5k{...}</code> · só minúsculas · sem espaços nas pontas</p>
+    </header>
+
+    <section class="card" id="sec-0">
+      <h2>Flag 0 — Tutorial <span class="tag">vale 0, ensina o loop</span></h2>
+      <p>Campo já preenchido. Clique Validar para aprender em &lt;60s.</p>
+      <form data-flag="0">
+        <input name="guess" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" value="5k{bem-vindo}" aria-label="Chute flag 0" />
+        <button type="submit">Validar</button>
+      </form>
+      <p class="msg" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="sec-1">
+      <h2>Flag 1 — Hash</h2>
+      <p>Descubra a palavra. Dica H1: está no audit 03.</p>
+      <p>SHA-256: <code id="hash1">0ce753eaacf78542192b0639c61868a79e4221f7914c7b6c69fc0f639612d419</code></p>
+      <details><summary>H1</summary><p>A palavra está no audit 03.</p></details>
+      <details><summary>H2</summary><p>Teste seu chute aqui mesmo, ou compare com <code>echo -n "chute" | sha256sum</code> / CyberChef.</p></details>
+      <form data-flag="1">
+        <input name="guess" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="ex: 5k{palavra}" aria-label="Chute flag 1" />
+        <button type="submit">Validar</button>
+      </form>
+      <p class="msg" aria-live="polite"></p>
+      <p class="frag" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="sec-2">
+      <h2>Flag 2 — Salt</h2>
+      <p>Mesma senha, dois hashes diferentes. Qual é o sal escondido?</p>
+      <p>senha=<code>cafe123</code> · sal1=<code>sal-grosso</code></p>
+      <p>hash1=<code>da3109965ab08b3512b02c1a3f83481f036cf2a2543bb73f38dd84c927ddef99</code></p>
+      <p>hash2=<code>a881ea34e578167e9c88c91c8e29fa4ae1e8583c1ec005b05fee1d0231737dcc</code></p>
+      <details><summary>H1</summary><p>O sal2 está nesta página, não no vídeo. Vasculhe o HTML.</p></details>
+      <details><summary>H2</summary><p>A ordem é <code>senha+sal</code>, tudo minúsculo, sem espaços.</p></details>
+      <form data-flag="2">
+        <input name="guess" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="o sal escondido" aria-label="Chute flag 2" />
+        <button type="submit">Validar</button>
+      </form>
+      <p class="msg" aria-live="polite"></p>
+      <p class="frag" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="sec-3">
+      <h2>Flag 3 — Header</h2>
+      <p>A resposta não está na página, está <em>em volta</em> dela.</p>
+      <details><summary>H1</summary><p>Em volta = headers HTTP da resposta.</p></details>
+      <details><summary>H2</summary><p>PC: DevTools → Network → recarrega → clica no documento → Headers → procure <code>X-Flag</code>. Celular: use o Espelho abaixo ou Kiwi Browser.</p></details>
+      <div class="row">
+        <button type="button" id="btn-headers">Ver pelo Espelho (mobile)</button>
+      </div>
+      <pre id="headers-out" hidden></pre>
+      <form data-flag="3">
+        <input name="guess" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="valor do X-Flag" aria-label="Chute flag 3" />
+        <button type="submit">Validar</button>
+      </form>
+      <p class="msg" aria-live="polite"></p>
+      <p class="frag" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="sec-4">
+      <h2>Flag 4 — Cookie</h2>
+      <p>Eco do audit 02: <code>document.cookie</code> tem algo.</p>
+      <details><summary>H1</summary><p>Olhe os cookies (Application → Cookies no PC).</p></details>
+      <details><summary>H2</summary><p>Copie o valor após <code>sessao=</code> e decodifique base64 (<code>atob()</code> no console / CyberChef). No celular, use o Espelho.</p></details>
+      <div class="row">
+        <button type="button" id="btn-cookie">Ver pelo Espelho (mobile)</button>
+      </div>
+      <pre id="cookie-out" hidden></pre>
+      <form data-flag="4">
+        <input name="guess" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="valor decodificado" aria-label="Chute flag 4" />
+        <button type="submit">Validar</button>
+      </form>
+      <p class="msg" aria-live="polite"></p>
+      <p class="frag" aria-live="polite"></p>
+    </section>
+
+    <section class="card final" id="sec-final">
+      <h2>Final — a carta</h2>
+      <p id="missing">Falta: 1, 2, 3, 4</p>
+      <p>Monte <code>frag1-frag2-frag3-frag4</code> ou desbloqueie com os 4 salvos.</p>
+      <form data-flag="final">
+        <input name="guess" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="frag1-frag2-frag3-frag4" aria-label="Chave final" />
+        <button type="submit">Desbloquear carta</button>
+      </form>
+      <p class="msg" aria-live="polite"></p>
+      <article id="carta" hidden>
+        <h3>Carta</h3>
+        <p id="carta-text"></p>
+      </article>
+      <details>
+        <summary>Já tenho frags, recuperar</summary>
+        <p>Se limpou o navegador, cole os 4 frags acima para continuar. Eles foram entregues via <code>/api/check</code> ao acertar cada flag.</p>
+      </details>
+    </section>
+
+    <footer>
+      <p>Achei X/5? Tira print e me marca. Placar oficial no Vídeo 2, hall da fama no Vídeo 3.</p>
+      <p class="tiny">Logs anônimos de jogabilidade (acerto/erro por flag, sem IP cru, sem chute cru).</p>
+    </footer>
+  </main>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

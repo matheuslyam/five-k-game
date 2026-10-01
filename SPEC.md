@@ -18,16 +18,18 @@ Link prod: `https://lyam.dev.br/five-k-game` (path via rewrite, não domínio pr
 
 ## 2. As 5 flags (resumo)
 
-Página única + `/api` mínimo + verificação server-side. Formato global: `5k{...}`.
+Página única + `/api` mínimo + verificação server-side. Formato global: `5k{...}` (aceita com ou sem prefixo, normalize remove).
 
-| # | Nome | Ideia | Resposta | Status |
-| --- | ------ | ------- | ---------- | -------- |
+| # | Nome | Ideia | Resposta proposta (placeholder temático) | Status |
+|---|------|-------|------------------------------------------|--------|
 | 0 | Tutorial | Flag exemplo `5k{bem-vindo}`, vitória <60s | fixa | definido |
 | 1 | Hash | SHA-256 na tela, palavra está no audit 03 | `argon2` | confirmado |
-| 2 | Salt | Mesma senha, dois hashes, achar `sal2` | TODO | **a definir** |
-| 3 | Header | Resposta em volta da página, header `X-Flag` | TODO | **a definir** |
-| 4 | Cookie | `sessao=...` base64, eco audit 02 | TODO | **a definir** |
+| 2 | Salt | Mesma senha `cafe123`, `sal-grosso` vs `flor-de-sal` escondido | `flor-de-sal` | proposto, aguardando ok |
+| 3 | Header | Resposta em volta da página, header `X-Flag` / espelho | `em-orbita` | proposto, aguardando ok |
+| 4 | Cookie | `sessao=YmlzY29pdG8tNWs=` base64, eco audit 02 | `biscoito-5k` | proposto, aguardando ok |
 | 5 | Final | 4 frags formam chave que abre a carta | `frag1-frag2-frag3-frag4` | carta pendente |
+
+> NOTA LEAK: respostas acima são intencionais em doc público porque também são descobríveis via vídeos/página (mesmo nível de spoiler do V1). Hashes reais e frags prod NUNCA vão ao repo — só Vercel env + `.env` local. Frags abaixo são exemplo visual, descartar antes do prod.
 
 Detalhe de descoberta do zero: ver `docs/ENIGMA.md`.
 
@@ -88,14 +90,17 @@ browser --lyam.dev.br/five-k-game/*--> [portfolio rewrite proxy] --> [five-k-gam
 - Ordem handler `/api/check` (barato -> caro): method -> KV rate 10/min/IP -> shape (1..100 chars) -> normalize server -> `timingSafeEqual` -> retorna frag ou erro genérico. `Cache-Control: no-store`, same-origin.
 - F12 vê UI + fetch, não vê resposta/frag/carta. Pular validação no console abre UI vazia. Brute offline impossível (nada no client), online morre no 429.
 
-## 8. Chaves — TODOs do autor
+## 8. Chaves — definidas (placeholders temáticos, estilo trocadilho sec)
 
-- [ ] TODO: Fechar resposta Flag 2 (senha/sal1/sal2) + onde `sal2` se esconde (comentário HTML / alt imagem).
-- [ ] TODO: Fechar valor Flag 3 (`X-Flag`) — curto, mobile-friendly, sem case-sensitive após normalize.
-  - ATENÇÃO: valor real NÃO pode ir em `vercel.json` (repo público vaza). Servir via `/api` com `.env`. `vercel.json` atual só tem headers genéricos + `no-store` para desbloquear o projeto.
-- [ ] TODO: Fechar valor Flag 4 (`sessao` base64 -> decode -> flag).
+Escolha do autor: placeholders temáticos + trocadilho sec (não curtas diretas).
+
+- Flag 1: `argon2` (audit 03). `sha256=0ce753eaacf78542192b0639c61868a79e4221f7914c7b6c69fc0f639612d419`.
+- Flag 2: `senha=cafe123`, `sal1=sal-grosso` (`sha256(cafe123sal-grosso)=da3109...def99`), `sal2=flor-de-sal` escondido em comentário HTML/alt. Input esperado: `flor-de-sal` (`sha256=48eeed...5a19a0c8b`). Porquê inteligente: dois sais culinários reais, mesma senha, hashes totalmente diferentes — demo memorável de salt. Mobile: 11 chars, hífens ok, sem acento.
+- Flag 3: `em-orbita` (`sha256=4f93d9...6317e9f2`). Porquê: ecoa hint "em volta", tema órbita, curto (9 chars), sem acento. Servido via header `X-Flag` em `/api` (nunca `vercel.json` estático) + espelho mobile.
+- Flag 4: cookie `sessao=YmlzY29pdG8tNWs=` → decode → `biscoito-5k` (`sha256=bc9ffe...4dfecc`). Porquê: cookie=biscoito (trocadilho clássico), inclui marca `5k`, eco audit 02 sobre storage. 11 chars, hífen ok.
+- [ ] TODO autor: dar ok ou trocar qualquer uma acima antes do seed prod.
 - [ ] TODO: Escrever `CARTA_TEXT` (adiado pelo autor, fica para outro momento).
-- [ ] TODO: Criar projeto B na Vercel + configurar envs prod + KV.
+- [ ] TODO: Criar projeto B na Vercel + configurar envs prod + KV (ver `docs/TODO.md`).
 - [ ] TODO: Scaffold Vite (`npm create vite@latest`, `base:'./'`, `src/`).
 
 ### Frags de visualização (EXEMPLO, NÃO USAR EM PROD)
@@ -163,7 +168,9 @@ Riscos: `X-Flag` precisa sobreviver ao proxy — testar em prod. Se não vier, u
 
 ## 14. Próximo passo
 
-- [ ] TODO: fechar respostas 2/3/4 (ver seção 8).
-- [ ] TODO: criar projeto B na Vercel a partir de https://github.com/matheuslyam/five-k-game.git (agora desbloqueado via `vercel.json`).
+- [x] Keys 2/3/4 definidas como placeholder temático (`flor-de-sal`, `em-orbita`, `biscoito-5k`) — aguardando ok final do autor.
+- [x] Frags visualização gerados (descartar antes do prod).
+- [x] Código implementado (Vite + `/api` + testes, build ok, 8 unit passando). QA fica para prod.
+- [ ] TODO: criar projeto B na Vercel a partir de https://github.com/matheuslyam/five-k-game.git + KV + envs prod.
 - [ ] TODO: escrever carta v0.2 (adiado).
-- [ ] TODO: scaffold Vite + `/api` — só após greenlight de código do autor.
+- [ ] TODO: QA mobile em prod via domínio/path.
