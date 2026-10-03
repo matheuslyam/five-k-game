@@ -265,7 +265,7 @@ document.getElementById('btn-cookie')?.addEventListener('click', async () => {
     if (data.cookie !== undefined) out.textContent += '\n[server vê cookie]: ' + data.cookie;
   } catch {
   }
-})();
+});
 
 if (!document.cookie.includes('sessao=')) {
   document.cookie = 'sessao=' + encodeURIComponent('YmlzY29pdG8tNWs=') + '; path=/; SameSite=Lax';
