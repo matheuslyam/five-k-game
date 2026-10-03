@@ -55,6 +55,11 @@ button:active { transform: translateY(1px); }
 .msg.err { color: #ffa198; }
 .frag { color: #79c0ff; }
 .final { border-color: #7ee787; }
+.gamenav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.gamenav a { color: #79c0ff; text-decoration: none; padding: 8px 10px; border: 1px solid #212b3a; border-radius: 8px; }
+.gamenav a[aria-current="page"] { color: #0b0e14; background: #7ee787; border-color: #7ee787; font-weight: 700; }
+.copy { margin-top: 8px; background: #0d1117; }
+.page[hidden] { display: none; }
 #carta { border-top: 1px dashed #30363d; margin-top: 12px; padding-top: 12px; }
 footer { margin: 24px 0; color: #8b949e; }
 @media (max-width: 480px) {

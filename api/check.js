@@ -1,7 +1,6 @@
 import { config, normalizeAnswer, sha256hex, timingEqualHex, json, rateLimited, clientIp, logLine } from './_lib.js';
 
-// POST /api/check {id:1-4, guess} -> {ok, frag?}
-// Ordem barata -> cara: method -> rate -> shape -> hash.
+// PORQUE: ordem barata->cara evita gastar crypto e vazar timing antes de filtrar spam/shape.
 export default async function handler(req, res) {
   const t0 = Date.now();
   const ip = clientIp(req);

@@ -1,7 +1,6 @@
 import { config, json } from './_lib.js';
 
-// GET /api/stats?token=ADMIN_TOKEN -> contadores (interno, só autor).
-// TODO prod: ler contadores reais do KV. MVP retorna shape + instrução.
+// PORQUE: travômetro do Vídeo 2 precisa de contadores sem expor IP/chute, então esta rota exige ADMIN_TOKEN e nunca loga segredo.
 export default async function handler(req, res) {
   const token = req.query?.token || new URL(req.url, 'http://x').searchParams.get('token');
   if (!config().adminToken || token !== config().adminToken) {

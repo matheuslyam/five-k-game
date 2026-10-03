@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeGuess, stripFlagFormat, normalizeAnswer, isValidShape, fragsToKey } from '../../src/game.js';
+import { normalizeGuess, stripFlagFormat, normalizeAnswer, isValidShape, fragsToKey, parseUnlockKey, parseRoute } from '../../src/game.js';
 
 describe('normalize', () => {
   it('trim + lowercase', () => {
@@ -21,5 +21,37 @@ describe('normalize', () => {
   });
   it('fragsToKey monta chave final', () => {
     expect(fragsToKey([' A ', 'B', 'c', 'D '])).toBe('a-b-c-d');
+  });
+});
+
+describe('parseUnlockKey', () => {
+  const KEY = '3952b1dd16f28958-9663e00d1dc9955b-e9c557ef87e6ed39-310353b5a0da185d';
+  it('aceita chave 4/4 em ordem', () => {
+    const r = parseUnlockKey(KEY);
+    expect(r.ok).toBe(true);
+    expect(r.parts).toHaveLength(4);
+  });
+  it('aceita uppercase e espaços nas pontas', () => {
+    expect(parseUnlockKey('  ' + KEY.toUpperCase() + '  ').ok).toBe(true);
+  });
+  it('rejeita parcial, hífen duplo e pontas', () => {
+    expect(parseUnlockKey('a-b-c').ok).toBe(false);
+    expect(parseUnlockKey('a-b-c-d-e').ok).toBe(false);
+    expect(parseUnlockKey('a--c-d').ok).toBe(false);
+    expect(parseUnlockKey('-a-b-c-d').ok).toBe(false);
+    expect(parseUnlockKey('a-b-c-d-').ok).toBe(false);
+    expect(parseUnlockKey('').ok).toBe(false);
+  });
+  it('rejeita espaço interno', () => {
+    expect(parseUnlockKey('a-b -c-d').ok).toBe(false);
+  });
+});
+
+describe('parseRoute', () => {
+  it('mantém rotas válidas e cai no onboarding', () => {
+    expect(parseRoute('#/flag-2')).toBe('#/flag-2');
+    expect(parseRoute('#/carta')).toBe('#/carta');
+    expect(parseRoute('#/x')).toBe('#/');
+    expect(parseRoute('')).toBe('#/');
   });
 });

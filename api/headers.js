@@ -1,7 +1,6 @@
 import { config, json } from './_lib.js';
 
-// GET /api/headers -> espelho mobile (canônico se X-Flag não sobreviver ao proxy).
-// Retorna também o valor do desafio via JSON (lido de env), além de setar X-Flag no header.
+// PORQUE: 90% joga no mobile sem DevTools, então o espelho é a alternativa oficial quando o header não sobrevive ao proxy.
 export default async function handler(req, res) {
   if (req.method !== 'GET') return json(res, 405, { ok: false });
   const cfg = config();

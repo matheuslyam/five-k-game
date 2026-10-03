@@ -1,7 +1,5 @@
-import { config, json, rateLimited, clientIp, logLine } from './_lib.js';
+import { config, json, rateLimited, clientIp, logLine, parseUnlockKey, timingEqualStr } from './_lib.js';
 
-// POST /api/unlock {frags:[4]} -> {ok, carta?} | {ok:false, falta:[ids]}
-// Carta nunca vai no bundle; só sai aqui após validar os 4.
 export default async function handler(req, res) {
   const t0 = Date.now();
   const ip = clientIp(req);
@@ -19,14 +17,18 @@ export default async function handler(req, res) {
       return json(res, 400, { ok: false });
     }
   }
-  const frags = body?.frags;
-  if (!Array.isArray(frags) || frags.length !== 4 || frags.some((f) => typeof f !== 'string' || f.length > 64)) {
+
+  // PORQUE: a carta só abre com a chave única frag1-frag2-frag3-frag4 em ordem,
+  // então qualquer outro formato (inclusive o array legado) é rejeitado sem dica.
+  if (body?.frags !== undefined || typeof body?.key !== 'string') {
     return json(res, 400, { ok: false });
   }
+  const parsed = parseUnlockKey(body.key);
+  if (!parsed.ok) return json(res, 400, { ok: false });
 
   const cfg = config();
-  const norm = frags.map((f) => String(f).trim().toLowerCase());
-  const falta = [1, 2, 3, 4].filter((id) => norm[id - 1] !== String(cfg.frags[id]).toLowerCase());
+  const expected = [1, 2, 3, 4].map((id) => String(cfg.frags[id]).toLowerCase());
+  const falta = [1, 2, 3, 4].filter((id) => !timingEqualStr(parsed.parts[id - 1], expected[id - 1]));
   const ok = falta.length === 0;
   logLine('unlock', { ip, ok, ms: Date.now() - t0 });
   if (!ok) return json(res, 200, { ok: false, falta });
