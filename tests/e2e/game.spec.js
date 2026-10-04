@@ -66,3 +66,35 @@ test('validação local barra sem rede e carta salva reabre texto + vídeo', asy
   const src = await page.locator('#pos-carta-video').getAttribute('src');
   expect(src).toContain('pos-carta-final.mp4');
 });
+
+test('#/carta/aberta sem carta volta para #/carta (guard)', async ({ page }) => {
+  await page.goto('/#/carta/aberta');
+  await expect(page.locator('#page-carta')).toBeVisible();
+  await expect(page.locator('#page-carta-aberta')).toBeHidden();
+});
+
+test('#/carta/aberta com carta salva mostra parágrafos + CTA do vídeo', async ({ page }) => {
+  // PORQUE: o preview estático não roda /api/unlock, então a cerimônia é
+  // coberta via restore (decode de \\n escapado + releitura direta).
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      '5k-progress',
+      JSON.stringify({ frags: { 1: 'a', 2: 'b', 3: 'c', 4: 'd' }, carta: 'p1\\n\\np2', done: true })
+    );
+  });
+  await page.goto('/#/carta/aberta');
+  await expect(page.locator('#page-carta-aberta')).toBeVisible();
+  // decode: \\n escapado virou quebra real com parágrafo preservado
+  expect(await page.locator('#carta-aberta-text').evaluate((el) => el.textContent)).toContain('p1\n\np2');
+  await expect(page.locator('#carta-aberta-cursor')).toBeHidden();
+  await expect(page.locator('#aberta-video-cta')).toBeVisible();
+  await expect(page.locator('#btn-aberta-skip')).toBeHidden();
+  // tela única: hero/nav e footer somem nessa rota
+  await expect(page.locator('body')).toHaveClass(/on-aberta/);
+  await expect(page.locator('.hero')).toBeHidden();
+  // CTA abre o player com o mp4 oficial
+  await page.locator('#btn-aberta-video').click();
+  await expect(page.locator('#aberta-video-wrap')).toBeVisible();
+  const vsrc = await page.locator('#aberta-video').getAttribute('src');
+  expect(vsrc).toContain('pos-carta-final.mp4');
+});

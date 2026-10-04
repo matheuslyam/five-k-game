@@ -66,6 +66,58 @@ button:active { transform: translateY(1px); }
 .selo { color: #8b949e; font-size: 0.9em; }
 .selo-img { vertical-align: -1px; }
 footer { margin: 24px 0; color: #8b949e; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Cerimônia da carta: tela única, fundo escuro minimalista, só o texto. */
+body.on-aberta { background: #05070b; }
+body.on-aberta .wrap { max-width: none; padding: 0; }
+body.on-aberta .hero, body.on-aberta footer { display: none; }
+.page.carta-aberta { background: #05070b; }
+.aberta-stage {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20vh 20px 18vh;
+  max-width: 40rem;
+  margin: 0 auto;
+  opacity: 0;
+}
+.aberta-stage.aberta-fade { animation: aberta-fadein 2s ease-out forwards; }
+@keyframes aberta-fadein { from { opacity: 0; } to { opacity: 1; } }
+.aberta-cursor {
+  font-size: 2rem;
+  color: #7ee787;
+  margin: 0;
+  min-height: 2.4em;
+  animation: aberta-blink 1s steps(2) infinite;
+}
+@keyframes aberta-blink { 50% { opacity: 0; } }
+#carta-aberta-text {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.15rem;
+  line-height: 1.9;
+  color: #e8e2d5;
+  width: 100%;
+}
+.aberta-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 2rem; }
+#btn-aberta-skip, #btn-aberta-sound.ghost {
+  background: transparent;
+  border: 1px solid #30363d;
+  color: #9aa4b2;
+  min-height: 48px;
+}
+#aberta-video-cta { margin-top: 2.5rem; }
+#aberta-video-cta button { min-height: 56px; font-size: 1.05rem; padding: 14px 28px; }
+#aberta-video-wrap { width: 100%; margin-top: 1.5rem; }
+#aberta-video { width: 100%; max-height: 70vh; background: #000; border-radius: 8px; }
+@media (prefers-reduced-motion: reduce) {
+  .aberta-stage.aberta-fade { animation: none; opacity: 1; }
+  .aberta-cursor { animation: none; }
+}
 @media (max-width: 480px) {
   form { flex-direction: column; position: sticky; bottom: 0; background: #11161f; padding-bottom: 4px; }
 }

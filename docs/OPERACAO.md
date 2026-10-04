@@ -67,6 +67,14 @@ node -e "console.log([...Array(4)].map(()=>require('crypto').randomBytes(8).toSt
 
 Rotação se vazar gabarito: gere novos `FRAG_*` + novo `CARTA_TEXT` se necessário, redeploy projeto B. Front não muda (recebe frag via `/api`).
 
+Texto da carta com parágrafos (o campo Value colapsa Enters reais — cole one-liner):
+
+```bash
+node -e "const fs=require('fs');const t=fs.readFileSync('carta-final.txt','utf8').trim().replace(/\r\n/g,'\n');process.stdout.write(t.replace(/\\/g,'\\\\').replace(/\n/g,'\\n'))"
+```
+
+Escreva `carta-final.txt` local com Enters reais (`\n\n` entre parágrafos), rode o comando e cole a saída no Value. O front decodifica (`decodeCarta`) nos dois caminhos — unlock novo e releitura via `localStorage`.
+
 Pré-push check obrigatório (casa NOMES de segredo — o label de UI `FRAG_` é legítimo e não entra aqui):
 
 ```bash

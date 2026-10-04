@@ -146,6 +146,24 @@
       </div>
     </section>
 
+    <section class="page carta-aberta" data-route="#/carta/aberta" id="page-carta-aberta" hidden>
+      <div class="aberta-stage" id="aberta-stage">
+        <h2 class="sr-only" tabindex="-1">A carta</h2>
+        <p class="aberta-cursor" id="carta-aberta-cursor" aria-hidden="true" hidden>▍</p>
+        <div id="carta-aberta-text" role="article" aria-label="Texto da carta"></div>
+        <p class="row aberta-actions">
+          <button type="button" id="btn-aberta-skip" hidden>Mostrar tudo</button>
+          <button type="button" id="btn-aberta-sound" class="ghost" hidden>♪ música: off</button>
+        </p>
+        <p class="row" id="aberta-video-cta" hidden><button type="button" id="btn-aberta-video">Assistir vídeo →</button></p>
+        <div id="aberta-video-wrap" hidden>
+          <video id="aberta-video" controls playsinline preload="none" poster="./pos-carta-poster.jpg" aria-label="Vídeo de agradecimento"></video>
+        </div>
+        <audio id="carta-bg-music" src="./carta-bg.mp3" loop preload="none"></audio>
+        <audio id="carta-tick" src="./carta-tick.mp3" preload="auto"></audio>
+      </div>
+    </section>
+
     <footer>
       <p>Achei X/5? Tira print e me marca. Placar oficial no Vídeo 2, hall da fama no Vídeo 3.</p>
       <p class="tiny">Logs anônimos de jogabilidade (acerto/erro por flag, sem IP cru, sem chute cru).</p>

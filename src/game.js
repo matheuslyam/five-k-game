@@ -31,7 +31,17 @@ export function parseUnlockKey(raw) {
   return { ok: true, key: parts.join('-'), parts };
 }
 
-export const ROUTES = ['#/', '#/flag-1', '#/flag-2', '#/flag-3', '#/flag-4', '#/carta'];
+// PORQUE: o texto da carta viaja como one-liner com \n escapado (o campo
+// Value do painel colapsa Enters reais), então front+restore decodificam
+// num lugar só. Nada disso toca na lógica do game: unlock continua opaco.
+export function decodeCarta(raw) {
+  return String(raw ?? '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .trim();
+}
+
+export const ROUTES = ['#/', '#/flag-1', '#/flag-2', '#/flag-3', '#/flag-4', '#/carta', '#/carta/aberta'];
 
 // PORQUE: hash desconhecido precisa cair no onboarding em vez de tela vazia,
 // senão link quebrado vira softlock para jogador mobile.
