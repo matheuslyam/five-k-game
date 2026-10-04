@@ -4,6 +4,14 @@ const progressEl = document.getElementById('progress');
 const missingEl = document.getElementById('missing');
 const cartaEl = document.getElementById('carta');
 const cartaTextEl = document.getElementById('carta-text');
+const skipBtn = document.getElementById('btn-skip');
+const posCartaEl = document.getElementById('pos-carta');
+const videoEl = document.getElementById('pos-carta-video');
+
+const VIDEO_SRC = './pos-carta-final.mp4';
+const TYPE_MS = 18;
+let typingTimer = 0;
+let fullCarta = '';
 
 const COOLDOWN_MS = 2000;
 
@@ -104,6 +112,46 @@ async function handleCheck(id, form, input) {
   }
 }
 
+function showVideo() {
+  if (videoEl && !videoEl.getAttribute('src')) videoEl.setAttribute('src', VIDEO_SRC);
+  if (posCartaEl) posCartaEl.hidden = false;
+}
+
+function finishTyping() {
+  clearInterval(typingTimer);
+  typingTimer = 0;
+  cartaTextEl.textContent = fullCarta;
+  if (skipBtn) skipBtn.hidden = true;
+  cartaEl.scrollIntoView({ block: 'nearest' });
+  showVideo();
+  state.done = true;
+  state.carta = fullCarta;
+  store.save(state);
+}
+
+// PORQUE: a carta é o payoff emocional (máquina de escrever + autoscroll) e o
+// vídeo só aparece ao concluir; pular respeita releitura e reduced-motion.
+function typeCarta(text) {
+  fullCarta = String(text ?? '').replace(/\\n/g, '\n');
+  cartaEl.hidden = false;
+  if (posCartaEl) posCartaEl.hidden = true;
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced || fullCarta.length === 0) {
+    finishTyping();
+    return;
+  }
+  cartaTextEl.textContent = '';
+  if (skipBtn) skipBtn.hidden = false;
+  let i = 0;
+  clearInterval(typingTimer);
+  typingTimer = setInterval(() => {
+    i += 1;
+    cartaTextEl.textContent = fullCarta.slice(0, i);
+    if (i % 24 === 0) cartaEl.scrollIntoView({ block: 'nearest' });
+    if (i >= fullCarta.length) finishTyping();
+  }, TYPE_MS);
+}
+
 async function handleFinal(form, input) {
   if (guardBusy(form)) return;
   const missing = [1, 2, 3, 4].filter((id) => !state.frags[id]);
@@ -131,11 +179,8 @@ async function handleFinal(form, input) {
       return;
     }
     if (data.ok) {
-      cartaTextEl.textContent = data.carta;
-      cartaEl.hidden = false;
+      typeCarta(data.carta);
       setMsg(form, 'Carta aberta!', true);
-      state.done = true;
-      store.save(state);
       refresh();
     } else {
       setMsg(form, data.falta ? 'Falta: ' + data.falta.join(', ') : 'Chave incompleta.', false);
@@ -248,6 +293,22 @@ document.getElementById('btn-headers')?.addEventListener('click', async () => {
   }
 });
 
+// PORQUE: 90% joga no in-app sem view-source, então o Espelho busca o HTML
+// da própria página e revela o alt onde o sal2 se esconde.
+document.getElementById('btn-sal')?.addEventListener('click', async () => {
+  const out = document.getElementById('sal-out');
+  out.hidden = false;
+  out.textContent = 'Carregando…';
+  try {
+    const res = await fetch('./index.html');
+    const html = await res.text();
+    const m = html.match(/class="selo-img"[^>]*alt="([^"]+)"/);
+    out.textContent = m ? 'O alt da imagem diz: ' + m[1] : 'Não achei — procure por alt= no HTML.';
+  } catch {
+    out.textContent = 'Falha de rede.';
+  }
+});
+
 document.getElementById('btn-cookie')?.addEventListener('click', async () => {
   const out = document.getElementById('cookie-out');
   out.hidden = false;
@@ -268,10 +329,32 @@ document.getElementById('btn-cookie')?.addEventListener('click', async () => {
 });
 
 if (!document.cookie.includes('sessao=')) {
-  document.cookie = 'sessao=' + encodeURIComponent('YmlzY29pdG8tNWs=') + '; path=/; SameSite=Lax';
+  document.cookie = 'sessao=' + encodeURIComponent('ZmFsc2lmaWNhci1vcmlnZW0=') + '; path=/; SameSite=Lax';
 }
+
+skipBtn?.addEventListener('click', () => {
+  if (typingTimer) finishTyping();
+});
+
+document.getElementById('btn-fullscreen')?.addEventListener('click', async () => {
+  try {
+    if (!videoEl) return;
+    if (videoEl.requestFullscreen) await videoEl.requestFullscreen();
+    else if (videoEl.webkitEnterFullscreen) videoEl.webkitEnterFullscreen();
+  } catch {
+  }
+});
 
 window.addEventListener('hashchange', show);
 if (!window.location.hash) history.replaceState(null, '', '#/');
 show();
 refresh();
+
+// PORQUE: carta + vídeo ficam liberados para rever — quem já desbloqueou
+// vê o texto completo e o player sem precisar resolver de novo.
+if (state.carta) {
+  fullCarta = String(state.carta);
+  cartaTextEl.textContent = fullCarta;
+  cartaEl.hidden = false;
+  showVideo();
+}

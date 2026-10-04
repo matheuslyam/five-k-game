@@ -49,11 +49,15 @@ Nunca commitar. Só `.env` local + Vercel env prod (projeto B). `.env.example` t
 
 ```
 RESP_HASH_1, RESP_HASH_2, RESP_HASH_3, RESP_HASH_4  # sha256(normalize(resposta)), hex
-FRAG_1, FRAG_2, FRAG_3, FRAG_4                      # 12-16 hex aleatórios cada
+FRAG_1, FRAG_2, FRAG_3, FRAG_4                      # 16 hex aleatórios cada (node -e abaixo)
 CARTA_TEXT                                          # plaintext da carta (server-only)
 ADMIN_TOKEN                                         # para GET /api/stats
-IP_SALT                                             # salt diário para hash de IP nos logs
+IP_SALT                                             # salt para hash de IP nos logs (rode periodicamente)
+HEADER_FLAG                                         # resposta da Flag 3 (valor do X-Flag/Espelho)
+COOKIE_B64                                          # resposta da Flag 4 em base64 (valor do cookie sessao)
 ```
+
+Na Vercel (projeto B → Settings → Environment Variables): cadastre todas com Environment `Production` apenas (Preview gera URLs públicas por PR — não exponha segredos lá) e marque `Sensitive`. Env só vale após **redeploy** (Deployments → Redeploy). Sem essas envs, o deploy com o fix do QA nega `check`/`unlock` com 500 de propósito (fail-closed) — ver `docs/QA-SEGURANCA.md` item 1.
 
 Geração frag (exemplo local, rode uma vez e guarde):
 
@@ -63,13 +67,13 @@ node -e "console.log([...Array(4)].map(()=>require('crypto').randomBytes(8).toSt
 
 Rotação se vazar gabarito: gere novos `FRAG_*` + novo `CARTA_TEXT` se necessário, redeploy projeto B. Front não muda (recebe frag via `/api`).
 
-Pré-push check obrigatório:
+Pré-push check obrigatório (casa NOMES de segredo — o label de UI `FRAG_` é legítimo e não entra aqui):
 
 ```bash
-grep -r "argon2\|FRAG_\|CARTA" dist/ src/ || echo "limpo"
+grep -rE "CARTA_TEXT|RESP_HASH_|ADMIN_TOKEN|IP_SALT|VITE_" dist/ src/ index.html && echo "VAZOU - nao de push" || echo "limpo"
 ```
 
-Deve retornar `limpo`. Se retornar match, não darse push (repo é público).
+Deve retornar `limpo`. Se retornar match, não dê push (repo é público).
 
 ## 3. API — contrato + ordem barata -> cara
 
@@ -122,7 +126,7 @@ Sinais de Burp/intruder: pico `429`, `unlock` sem `check` prévio, `id` fora de 
 
 1. Chrome Android + Safari iOS + aberto de dentro do Instagram.
 2. Avião on/off no meio de flag.
-3. `ARGON2`, ` Argon2 `, `argon2` passam.
+3. Resposta em MAIÚSCULA, com espaços nas pontas e minúscula passam igual.
 4. Limpa storage/cookies — dá para re-colar frag e continuar.
 5. Teclado aberto não esconde Validar (sticky bottom, `100dvh`).
 6. Header via domínio final em anônima.

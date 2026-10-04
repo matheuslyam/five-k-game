@@ -6,7 +6,6 @@
   <title>five-k-game — escondi 5 flags</title>
   <meta name="description" content="Mini-game enigma estilo CTF para comemorar 5k follows. Ache 5 flags e abra a carta." />
   <link rel="stylesheet" href="./src/style.css" />
-  <!-- sal2: flor-de-sal -->
 </head>
 <body>
   <main class="wrap">
@@ -42,9 +41,9 @@
     <section class="page" data-route="#/flag-1" id="page-flag-1" hidden>
       <div class="card" id="sec-1">
         <h2>Flag 1 — Hash</h2>
-        <p>Descubra a palavra. Dica 1: está no audit 03.</p>
-        <p>SHA-256: <code id="hash1">0ce753eaacf78542192b0639c61868a79e4221f7914c7b6c69fc0f639612d419</code></p>
-        <details><summary>Dica 1</summary><p>A palavra está no audit 03.</p></details>
+        <p>Descubra a palavra. Dica 1: está no audit 08.</p>
+        <p>SHA-256: <code id="hash1">67d94a7e7e817b082b1d8fd30df77a54661161159ccb2a21a4bdc9243baf13f6</code></p>
+        <details><summary>Dica 1</summary><p>A palavra está no audit 08. O que a sessão finge fazer?</p></details>
         <details><summary>Dica 2</summary><p>Teste seu chute aqui mesmo, ou compare com <code>echo -n "chute" | sha256sum</code> / CyberChef.</p></details>
         <form data-flag="1">
           <input name="guess" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="ex: 5k{palavra}" aria-label="Chute flag 1" />
@@ -62,9 +61,14 @@
         <p>Mesma senha, dois hashes diferentes. Qual é o sal escondido?</p>
         <p>senha=<code>cafe123</code> · sal1=<code>sal-grosso</code></p>
         <p>hash1=<code>da3109965ab08b3512b02c1a3f83481f036cf2a2543bb73f38dd84c927ddef99</code></p>
-        <p>hash2=<code>a881ea34e578167e9c88c91c8e29fa4ae1e8583c1ec005b05fee1d0231737dcc</code></p>
-        <details><summary>Dica 1</summary><p>O sal2 está nesta página, não no vídeo. Vasculhe o HTML.</p></details>
+        <p>hash2=<code>1fa41be79673df0133248dc09038f16632fb5aaab7f134c1d7efe35aaeea7cfb</code></p>
+        <p class="selo">selo da casa: <img class="selo-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Ccircle cx='6' cy='6' r='5' fill='%237ee787'/%3E%3C/svg%3E" alt="limite" width="12" height="12" /> confira o alt da imagem</p>
+        <details><summary>Dica 1</summary><p>O sal2 está nesta página, não no vídeo. Imagens também falam.</p></details>
         <details><summary>Dica 2</summary><p>A ordem é <code>senha+sal</code>, tudo minúsculo, sem espaços.</p></details>
+        <div class="row">
+          <button type="button" id="btn-sal">Ver esconderijo (Espelho)</button>
+        </div>
+        <pre id="sal-out" hidden></pre>
         <form data-flag="2">
           <input name="guess" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="o sal escondido" aria-label="Chute flag 2" />
           <button type="submit">Validar</button>
@@ -78,9 +82,9 @@
     <section class="page" data-route="#/flag-3" id="page-flag-3" hidden>
       <div class="card" id="sec-3">
         <h2>Flag 3 — Header</h2>
-        <p>A resposta não está na página, está <em>em volta</em> dela.</p>
-        <details><summary>Dica 1</summary><p>Em volta = headers HTTP da resposta.</p></details>
-        <details><summary>Dica 2</summary><p>PC: DevTools → Network → recarrega → clica no documento → Headers → procure <code>X-Flag</code>. Celular: use o Espelho abaixo ou Kiwi Browser.</p></details>
+        <p>A resposta não está na página, está <em>em volta</em> dela. Relembre o audit 09: cada tentativa custa algo. O quê?</p>
+        <details><summary>Dica 1</summary><p>Em volta = headers HTTP da resposta. O audit 09 dá o nome do custo.</p></details>
+        <details><summary>Dica 2</summary><p>Jeito garantido: use o <strong>Espelho</strong> abaixo — ele mostra o valor oficial. No PC, também dá para tentar DevTools → Network → recarregar → Headers → <code>X-Flag</code>, mas atrás do proxy o header nem sempre aparece no documento.</p></details>
         <div class="row">
           <button type="button" id="btn-headers">Ver pelo Espelho (mobile)</button>
         </div>
@@ -98,15 +102,15 @@
     <section class="page" data-route="#/flag-4" id="page-flag-4" hidden>
       <div class="card" id="sec-4">
         <h2>Flag 4 — Cookie</h2>
-        <p>Eco do audit 02: <code>document.cookie</code> tem algo.</p>
+        <p>Eco do audit 02: <code>document.cookie</code> tem algo. Mas decodificar é só o primeiro passo.</p>
         <details><summary>Dica 1</summary><p>Olhe os cookies (Application → Cookies no PC).</p></details>
-        <details><summary>Dica 2</summary><p>Copie o valor após <code>sessao=</code> e decodifique base64 (<code>atob()</code> no console / CyberChef). No celular, use o Espelho.</p></details>
+        <details><summary>Dica 2</summary><p>Copie o valor após <code>sessao=</code> e decodifique base64 (<code>atob()</code> no console / CyberChef). O que sai é uma pista, não a resposta: o nome do golpe, em inglês, está no audit 07.</p></details>
         <div class="row">
           <button type="button" id="btn-cookie">Ver pelo Espelho (mobile)</button>
         </div>
         <pre id="cookie-out" hidden></pre>
         <form data-flag="4">
-          <input name="guess" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="valor decodificado" aria-label="Chute flag 4" />
+          <input name="guess" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="nome do golpe (inglês)" aria-label="Chute flag 4" />
           <button type="submit">Validar</button>
         </form>
         <p class="msg" aria-live="polite"></p>
@@ -128,7 +132,13 @@
         <article id="carta" hidden>
           <h3>Carta</h3>
           <p id="carta-text"></p>
+          <p class="row"><button type="button" id="btn-skip" hidden>Mostrar tudo</button></p>
         </article>
+        <div id="pos-carta" hidden>
+          <h3>Depois da carta</h3>
+          <video id="pos-carta-video" controls playsinline preload="none" poster="./pos-carta-poster.jpg" aria-label="Vídeo de agradecimento"></video>
+          <p><button type="button" id="btn-fullscreen">Tela cheia</button></p>
+        </div>
         <details>
           <summary>Já tenho frags, recuperar</summary>
           <p>Se limpou o navegador, cole os 4 frags acima para continuar. Eles foram entregues via <code>/api/check</code> ao acertar cada flag.</p>

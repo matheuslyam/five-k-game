@@ -39,3 +39,30 @@ test('Dica 1/2 e Copiar Chave existem por flag', async ({ page }) => {
     await expect(page.locator(`[data-copy="${n}"]`)).toContainText(/Copiar Chave/i);
   }
 });
+
+test('validação local barra sem rede e carta salva reabre texto + vídeo', async ({ page }) => {
+  await page.goto('/#/flag-1');
+  await page.locator('form[data-flag="1"] input').fill('');
+  await page.locator('form[data-flag="1"] button').click();
+  await expect(page.locator('#sec-1 .msg')).toContainText(/inválido/i);
+
+  await page.goto('/#/carta');
+  await page.locator('form[data-flag="final"] input').fill('chave-curta');
+  await page.locator('form[data-flag="final"] button').click();
+  await expect(page.locator('#sec-final .msg')).toContainText(/incompleta/i);
+
+  // PORQUE: o preview estático não roda /api, então o caminho unlock→carta
+  // é coberto via restore (carta+vídeo persistem para rever após unlock real).
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      '5k-progress',
+      JSON.stringify({ frags: { 1: 'a', 2: 'b', 3: 'c', 4: 'd' }, carta: 'Carta de teste para rever.', done: true })
+    );
+  });
+  await page.reload();
+  await expect(page.locator('#carta')).toBeVisible();
+  await expect(page.locator('#carta-text')).toContainText(/Carta de teste/);
+  await expect(page.locator('#pos-carta')).toBeVisible();
+  const src = await page.locator('#pos-carta-video').getAttribute('src');
+  expect(src).toContain('pos-carta-final.mp4');
+});

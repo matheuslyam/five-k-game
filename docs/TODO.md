@@ -11,14 +11,14 @@
 - [ ] TODO: adicionar rewrites `/five-k-game/*` no `vercel.json` do portfólio apontando para a URL do projeto B + redirect trailing slash. Redeploy portfólio. Testar em prod.
 - [ ] TODO: testar `X-Flag` e `POST /api/*` através do proxy `lyam.dev.br/five-k-game/` em aba anônima.
 
-## Chaves / enigma (definidas como placeholder temático, aguardando ok final)
+## Chaves / enigma (ELOS definido 04/10/2026 — respostas só em `.env`)
 
-- [x] Flag 1: `argon2` (audit 03) — confirmado.
-- [x] Flag 2 proposta: `senha=cafe123`, `sal1=sal-grosso`, `sal2=flor-de-sal` (escondido em comentário/alt). Input: `flor-de-sal`. Porquê: sais culinários reais, mesma senha, hashes diferentes.
-- [x] Flag 3 proposta: `em-orbita` (ecoa "em volta", 9 chars). Servir via `/api`, nunca `vercel.json`.
-- [x] Flag 4 proposta: cookie `sessao=YmlzY29pdG8tNWs=` → `biscoito-5k` (cookie=biscoito + marca 5k).
-- [ ] TODO autor: dar ok ou trocar qualquer uma acima antes do seed prod.
-- [ ] TODO: carta — adiado (autor revisa depois).
+- [x] Flag 1: palavra do audit 08.
+- [x] Flag 2: `senha=cafe123`, `sal1=sal-grosso`, `sal2` no alt da imagem + Espelho.
+- [x] Flag 3: valor do audit 09, via `/api` (nunca `vercel.json`).
+- [x] Flag 4: cookie base64 vira pista + nome do golpe em inglês (audit 07).
+- [x] Carta V3 oficial (só `.env` local + Vercel env) + vídeo pós-carta com easter egg.
+- [ ] TODO: seed prod (hashes + `FRAG_*` novos + `CARTA_TEXT` + demais envs no projeto B).
 
 ## Frags visualização (descartar antes do prod)
 

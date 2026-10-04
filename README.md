@@ -9,7 +9,7 @@ Repo público: `https://github.com/matheuslyam/five-k-game.git`
 
 1. Cada flag está no formato `5k{...}`.
 2. Digite seu chute no campo da flag e clique Validar.
-3. Só minúsculas, sem espaços no início/fim. `ARGON2`, ` Argon2 ` e `argon2` valem o mesmo.
+3. Só minúsculas, sem espaços no início/fim. MAIÚSCULA, com espaços e minúscula valem o mesmo.
 4. Progresso salva no seu navegador (`x/5`). Ordem 1-4 é livre, a Final abre com 4/4.
 5. Travou? Abra a dica H1, depois H2. A H3 forte sai no Vídeo 2.
 
@@ -33,6 +33,8 @@ cp .env.example .env
 # preencha com valores FAKE locais, nunca os reais de prod
 npm i
 npm run dev
+# uma vez, para os testes e2e:
+npx playwright install chromium
 ```
 
 Respostas reais vivem só em `.env` local + Vercel env de prod. Nunca são commitadas.
@@ -43,7 +45,7 @@ Logs anônimos de jogabilidade (acerto/erro por flag, sem IP cru, sem chute cru)
 
 ## Série
 
-- V1 Lançamento: o que é CTF + hint Audit 03.
+- V1 Lançamento: o que é CTF + hints audits 07/09.
 - V2 Meio: placar + hint da mais travada.
 - V3 Solução: resolução + carta + nomes.
 

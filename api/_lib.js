@@ -3,21 +3,36 @@ import crypto from 'node:crypto';
 // PORQUE: prod lê segredos só de env (repo é público), então aqui ficam
 // apenas placeholders temáticos para dev local nunca confundir com prod.
 const DEV = {
-  RESP_HASH_1: '0ce753eaacf78542192b0639c61868a79e4221f7914c7b6c69fc0f639612d419',
-  RESP_HASH_2: '48eeed6908d4151249c6a0c036153eb9a06889d580c35ec85dbb0965a19a0c8b',
-  RESP_HASH_3: '4f93d9aa196ce475724650d54232fe55778a8b6cc8e5738479e96b8e6317e9f2',
-  RESP_HASH_4: 'bc9ffe6e9fc59d1aea56c50eb9309fbca801206b9cd64aa08bbead0ba4d4fecc',
+  RESP_HASH_1: '67d94a7e7e817b082b1d8fd30df77a54661161159ccb2a21a4bdc9243baf13f6',
+  RESP_HASH_2: 'eb46b0bc28f98c67bf56b9c34f463acfd0588d84b38468ca57f0b4418b7139b4',
+  RESP_HASH_3: 'a1f021c0dd0ef695f96d6721d4695b147de9ae911719701e39a9a8917b7285ee',
+  RESP_HASH_4: 'ea4e615786753f09c1b15439564f6ad0d489cd317748423d3a4512bbc31aa108',
   FRAG_1: '3952b1dd16f28958',
   FRAG_2: '9663e00d1dc9955b',
   FRAG_3: 'e9c557ef87e6ed39',
   FRAG_4: '310353b5a0da185d',
   CARTA_TEXT: 'Carta placeholder (dev). Texto real só em prod via CARTA_TEXT.',
-  HEADER_FLAG: 'em-orbita',
-  COOKIE_B64: 'YmlzY29pdG8tNWs='
+  HEADER_FLAG: 'orcamento',
+  COOKIE_B64: 'ZmFsc2lmaWNhci1vcmlnZW0='
 };
 
 export function env(name, fallback) {
   return process.env[name] || fallback;
+}
+
+// PORQUE: defaults DEV são públicos (repo aberto) — servir frag/carta com eles
+// em produção equivale a publicar o gabarito. Em prod (VERCEL=1) sem env,
+// os handlers negam fechado em vez de cair no fallback.
+export function isProd() {
+  return !!process.env.VERCEL;
+}
+const PROD_REQUIRED = [
+  'RESP_HASH_1', 'RESP_HASH_2', 'RESP_HASH_3', 'RESP_HASH_4',
+  'FRAG_1', 'FRAG_2', 'FRAG_3', 'FRAG_4',
+  'CARTA_TEXT'
+];
+export function missingProdEnv() {
+  return PROD_REQUIRED.filter((k) => !process.env[k]);
 }
 
 export function config() {
@@ -110,8 +125,17 @@ export function _resetBuckets() {
 }
 
 export function clientIp(req) {
+  // PORQUE: o primeiro token do XFF é controlável pelo cliente (a edge anexa
+  // o IP real no FINAL). Confiar no primeiro permite rotacionar identidade e
+  // zerar o rate-limit. Atrás de um único proxy confiável (edge Vercel), o
+  // último token é o IP visto pela edge; `x-real-ip` (setado pela Vercel) vence.
+  const real = req.headers['x-real-ip'];
+  if (typeof real === 'string' && real.trim()) return real.trim();
   const fwd = req.headers['x-forwarded-for'];
-  if (typeof fwd === 'string' && fwd) return fwd.split(',')[0].trim();
+  if (typeof fwd === 'string' && fwd.trim()) {
+    const parts = fwd.split(',').map((s) => s.trim()).filter(Boolean);
+    if (parts.length) return parts[parts.length - 1];
+  }
   return req.socket?.remoteAddress || 'unknown';
 }
 
