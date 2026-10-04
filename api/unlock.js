@@ -1,12 +1,20 @@
-import { config, json, rateLimited, clientIp, logLine, parseUnlockKey, timingEqualStr } from './_lib.js';
+import { config, json, rateLimited, clientIp, logLine, parseUnlockKey, timingEqualStr, isProd, missingProdEnv } from './_lib.js';
 
 export default async function handler(req, res) {
   const t0 = Date.now();
   const ip = clientIp(req);
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method' });
 
+  if (isProd() && missingProdEnv().length) {
+    logLine('unlock', { ip, ms: Date.now() - t0 });
+    return json(res, 500, { ok: false });
+  }
+
   const { limited } = rateLimited(ip, 10, 60_000);
-  if (limited) return json(res, 429, { ok: false, error: 'rate' });
+  if (limited) {
+    res.setHeader('retry-after', '60');
+    return json(res, 429, { ok: false, error: 'rate' });
+  }
 
   let body = req.body;
   if (typeof body === 'string') {

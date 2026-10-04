@@ -1,4 +1,4 @@
-import { config, normalizeAnswer, sha256hex, timingEqualHex, json, rateLimited, clientIp, logLine } from './_lib.js';
+import { config, normalizeAnswer, sha256hex, timingEqualHex, json, rateLimited, clientIp, logLine, isProd, missingProdEnv } from './_lib.js';
 
 // PORQUE: ordem barata->cara evita gastar crypto e vazar timing antes de filtrar spam/shape.
 export default async function handler(req, res) {
@@ -6,9 +6,15 @@ export default async function handler(req, res) {
   const ip = clientIp(req);
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method' });
 
+  if (isProd() && missingProdEnv().length) {
+    logLine('check', { ip, ms: Date.now() - t0 });
+    return json(res, 500, { ok: false });
+  }
+
   const { limited } = rateLimited(ip, 10, 60_000);
   if (limited) {
     logLine('check', { ip, ms: Date.now() - t0, limited: true });
+    res.setHeader('retry-after', '60');
     return json(res, 429, { ok: false, error: 'rate' });
   }
 

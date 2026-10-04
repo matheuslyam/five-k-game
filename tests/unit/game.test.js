@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeGuess, stripFlagFormat, normalizeAnswer, isValidShape, fragsToKey, parseUnlockKey, parseRoute } from '../../src/game.js';
+import { normalizeGuess, stripFlagFormat, normalizeAnswer, isValidShape, fragsToKey, parseUnlockKey, parseRoute, decodeCarta } from '../../src/game.js';
 
 describe('normalize', () => {
   it('trim + lowercase', () => {
-    expect(normalizeGuess('  ArGon2 ')).toBe('argon2');
+    expect(normalizeGuess('  PaLaVrA ')).toBe('palavra');
   });
   it('aceita 5k{...} e variações de case', () => {
-    expect(normalizeAnswer('5k{argon2}')).toBe('argon2');
-    expect(normalizeAnswer(' 5K{Argon2} ')).toBe('argon2');
-    expect(normalizeAnswer('argon2')).toBe('argon2');
+    expect(normalizeAnswer('5k{palavra}')).toBe('palavra');
+    expect(normalizeAnswer(' 5K{PaLaVrA} ')).toBe('palavra');
+    expect(normalizeAnswer('palavra')).toBe('palavra');
   });
   it('strip só remove um nível', () => {
     expect(stripFlagFormat('5k{bem-vindo}')).toBe('bem-vindo');
@@ -51,7 +51,26 @@ describe('parseRoute', () => {
   it('mantém rotas válidas e cai no onboarding', () => {
     expect(parseRoute('#/flag-2')).toBe('#/flag-2');
     expect(parseRoute('#/carta')).toBe('#/carta');
+    expect(parseRoute('#/carta/aberta')).toBe('#/carta/aberta');
     expect(parseRoute('#/x')).toBe('#/');
     expect(parseRoute('')).toBe('#/');
+  });
+});
+
+describe('decodeCarta', () => {
+  it('converte \\n escapado em quebra real', () => {
+    expect(decodeCarta('oi\\nvoce')).toBe('oi\nvoce');
+  });
+  it('preserva parágrafos (\\n\\n) e Enters reais', () => {
+    expect(decodeCarta('p1\\n\\np2')).toBe('p1\n\np2');
+    expect(decodeCarta('p1\n\np2')).toBe('p1\n\np2');
+  });
+  it('normaliza \\r\\n e apara pontas', () => {
+    expect(decodeCarta('  a\r\nb  ')).toBe('a\nb');
+  });
+  it('é idempotente e tolera não-string', () => {
+    expect(decodeCarta(decodeCarta('a\\n\\nb'))).toBe('a\n\nb');
+    expect(decodeCarta(null)).toBe('');
+    expect(decodeCarta(undefined)).toBe('');
   });
 });
