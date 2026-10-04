@@ -139,3 +139,4 @@ Sinais de Burp/intruder: pico `429`, `unlock` sem `check` prévio, `id` fora de 
 5. Teclado aberto não esconde Validar (sticky bottom, `100dvh`).
 6. Header via domínio final em anônima.
 7. `POST /api/check` com body gigante -> 400/413 rápido, sem lentidão.
+8. Cerimônia `#/carta/aberta` em localhost: `npm run dev` não serve `/api`, então o unlock nunca completa e o guard volta para `#/carta`. Para pré-visualizar a cerimônia, cole no console o snippet de `_temp/seed-carta-local.js` (gitignored, gera a partir do texto real) e abra `#/carta/aberta`.

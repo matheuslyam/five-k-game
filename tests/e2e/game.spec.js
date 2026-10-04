@@ -67,6 +67,17 @@ test('validação local barra sem rede e carta salva reabre texto + vídeo', asy
   expect(src).toContain('pos-carta-final.mp4');
 });
 
+test('placeholders não entregam dica (só a carta tem)', async ({ page }) => {
+  // PORQUE: placeholder visível vira dica grátis — decisão do autor 04/10/2026:
+  // flags 1-4 sem placeholder, só a final mantém o formato frag1-...-frag4.
+  for (const n of ['1', '2', '3', '4']) {
+    await page.goto(`/#/flag-${n}`);
+    expect(await page.locator(`form[data-flag="${n}"] input`).getAttribute('placeholder')).toBeNull();
+  }
+  await page.goto('/#/carta');
+  expect(await page.locator('form[data-flag="final"] input').getAttribute('placeholder')).toMatch(/frag1-frag2-frag3-frag4/);
+});
+
 test('#/carta/aberta sem carta volta para #/carta (guard)', async ({ page }) => {
   await page.goto('/#/carta/aberta');
   await expect(page.locator('#page-carta')).toBeVisible();
