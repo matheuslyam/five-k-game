@@ -11,16 +11,16 @@ Public CTF mini-game (Vite vanilla JS + Vercel serverless). Repo is public — n
 
 ## Structure
 
-- `src/main.js` — entry, hash router (`#/` … `#/carta`), fetch, `localStorage 5k-progress`; `src/game.js` — pure helpers (normalize, `parseUnlockKey`, `parseRoute`)
-- `api/_lib.js` — `config()` (env + DEV placeholders), sha256 + `timingSafeEqual`, in-memory `rateLimited`, `logLine`; `api/check.js` / `unlock.js` / `headers.js` (mobile Espelho mirror) / `stats.js` (ADMIN_TOKEN only)
-- `index.html` — all 6 pages + puzzle data; `vercel.json` — security headers + `no-store` only; `docs/OPERACAO.md` — deploy/envs; `SPEC.md` — design; `docs/ENIGMA.md` — player hints (no answers)
+- `src/main.js` — entry, hash router (`#/` … `#/carta/aberta`), fetch, `localStorage 5k-progress`, cerimônia terminal (boot, typing por blocos, música+tick, vídeo); `src/game.js` — pure helpers (normalize, `parseUnlockKey`, `parseRoute`, `decodeCarta`)
+- `api/_lib.js` — `config()` (env + DEV placeholders), sha256 + `timingSafeEqual`, `rateLimited` async (KV global quando `KV_REST_API_URL`/`TOKEN` presentes, memória dev/fallback), `countEvent`/`readStats`, `logLine`; `api/check.js` / `unlock.js` / `headers.js` (mobile Espelho mirror) / `stats.js` (ADMIN_TOKEN only, contadores reais com KV)
+- `index.html` — 7 rotas + puzzle data; `public/fonts/` — JetBrains Mono self-host; `vercel.json` — security headers + `no-store` only; `docs/OPERACAO.md` — deploy/envs/KV; `SPEC.md` — design (implementado); `docs/ENIGMA.md` — player hints (no answers); `_temp/` — gitignored (carta.txt, guia spoiler, seeds locais — nunca commitar)
 
 ## Rules that will break things if missed
 
 - `vite.config.js` `base: './'` is mandatory — proxy is `lyam.dev.br/five-k-game/` → `five-k-game.vercel.app`; `base: '/'` = white screen in prod.
 - Normalize must stay in sync front+server: `trim().toLowerCase()` + strip one `5k{...}` wrapper (`src/game.js` ↔ `api/_lib.js`).
 - `/api/check` order is load-bearing (cheap→costly): method → rate-limit 10/min/IP → shape (`id` 1-4, `guess` 1-100 chars, body ≤1KB) → hash + `timingSafeEqual`. `/api/unlock` takes only `{key: "f1-f2-f3-f4"}` string; legacy `{frags: [...]}` is rejected with 400 by design.
-- `rateLimited` in `api/_lib.js` is in-memory dev stub — prod needs Vercel KV/Upstash (multinstance bypass otherwise). Don't "optimize" around it.
+- `rateLimited` em `api/_lib.js` é KV global em prod (multinstance-safe) e memória só dev/fallback — não "otimizar" para um lado só.
 - Secrets: real `RESP_HASH_*`, `FRAG_*`, `CARTA_TEXT`, `ADMIN_TOKEN`, `IP_SALT` live only in local `.env` + Vercel env. Never `VITE_*`/frontend import, never `X-Flag` real value in `vercel.json`. `DEV` fallbacks in `_lib.js` and puzzle strings in `index.html` are intentional placeholders, not leaks.
 - Privacy/security: render user-controlled `guess`/`frag`/`carta` with `textContent` only (XSS = real vuln, see `SECURITY.md`); logs only `{t, route, id, ok, ipHash, ms, len, hashPrefix}` — never raw guess, frag, carta, or IP. All `/api` + pages send `Cache-Control: no-store`; `sourcemap: false`.
 - Mobile is 90% of players: keep inputs `>=16px`, tap targets large, keep Espelho buttons (`/api/headers`) + clipboard `textarea` fallback in `main.js` — don't remove.

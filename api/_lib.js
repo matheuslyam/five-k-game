@@ -106,10 +106,13 @@ export function json(res, status, obj) {
   res.end(JSON.stringify(obj));
 }
 
-// PORQUE: em serverless cada instância tem sua memória, então este
-// limite é apenas anti-spam barato de dev — prod precisa de KV compartilhado.
+// PORQUE: em serverless cada instância tem sua memória — o Map abaixo só
+// serve para dev local e como fallback. Em prod (KV_REST_API_URL+TOKEN
+// presentes, ligadas pelo Storage da Vercel) o limite é global via
+// INCR+EXPIRE atômicos por janela de 60s, chaveado por ipHash (LGPD: IP cru
+// nunca encosta no KV). Sem KV ao alcance: fail-open com log, nunca 500.
 const buckets = new Map();
-export function rateLimited(ip, limit = 10, windowMs = 60_000) {
+function memLimited(ip, limit = 10, windowMs = 60_000) {
   const now = Date.now();
   const b = buckets.get(ip) || { count: 0, reset: now + windowMs };
   if (now > b.reset) {
@@ -122,6 +125,79 @@ export function rateLimited(ip, limit = 10, windowMs = 60_000) {
 }
 export function _resetBuckets() {
   buckets.clear();
+}
+
+// Injeção para testes (mock). Em runtime, import dinâmico só quando há env.
+let kvOverride = null;
+export function _setKvClient(c) {
+  kvOverride = c;
+}
+async function kvStore() {
+  if (kvOverride !== null) return kvOverride;
+  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    const { kv } = await import('@vercel/kv');
+    return kv;
+  }
+  return null;
+}
+
+export async function rateLimited(ip, limit = 10, windowMs = 60_000) {
+  const key = '5k:rl:' + hashIp(ip);
+  const secs = Math.max(1, Math.round(windowMs / 1000));
+  let store = null;
+  try {
+    store = await kvStore();
+  } catch {
+    store = null;
+  }
+  if (!store) return memLimited(ip, limit, windowMs);
+  try {
+    const count = await store.incr(key);
+    if (count === 1) await store.expire(key, secs);
+    return { limited: count > limit, remaining: Math.max(0, limit - count) };
+  } catch {
+    try {
+      await store.expire(key, secs);
+    } catch {
+    }
+    console.log(JSON.stringify({ t: new Date().toISOString(), route: 'kv-fallback', limited: false }));
+    return memLimited(ip, limit, windowMs);
+  }
+}
+
+// PORQUE: o travômetro do Vídeo 2 precisa de contadores reais sem expor
+// IP/chute — best-effort, nunca quebra a resposta do jogador.
+export async function countEvent(name) {
+  let store = null;
+  try {
+    store = await kvStore();
+  } catch {
+    return;
+  }
+  if (!store) return;
+  try {
+    await store.incr('5k:stats:' + name);
+  } catch {
+  }
+}
+
+export async function readStats(names) {
+  let store = null;
+  try {
+    store = await kvStore();
+  } catch {
+    return null;
+  }
+  if (!store) return null;
+  try {
+    const keys = names.map((n) => '5k:stats:' + n);
+    const vals = await store.mget(...keys);
+    const out = {};
+    names.forEach((n, i) => { out[n] = Number(vals[i]) || 0; });
+    return out;
+  } catch {
+    return null;
+  }
 }
 
 export function clientIp(req) {
