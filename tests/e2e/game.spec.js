@@ -52,7 +52,7 @@ test('validação local barra sem rede e carta salva reabre texto + vídeo', asy
   await expect(page.locator('#sec-final .msg')).toContainText(/incompleta/i);
 
   // PORQUE: o preview estático não roda /api, então o caminho unlock→carta
-  // é coberto via restore (carta+vídeo persistem para rever após unlock real).
+  // é coberto via restore — e com done a #/carta redireciona para a aberta.
   await page.addInitScript(() => {
     localStorage.setItem(
       '5k-progress',
@@ -60,11 +60,11 @@ test('validação local barra sem rede e carta salva reabre texto + vídeo', asy
     );
   });
   await page.reload();
-  await expect(page.locator('#carta')).toBeVisible();
-  await expect(page.locator('#carta-text')).toContainText(/Carta de teste/);
-  await expect(page.locator('#pos-carta')).toBeVisible();
-  const src = await page.locator('#pos-carta-video').getAttribute('src');
-  expect(src).toContain('pos-carta-final.mp4');
+  await expect(page).toHaveURL(/#\/carta\/aberta/);
+  await expect(page.locator('#page-carta-aberta')).toBeVisible();
+  await expect(page.locator('#carta-aberta-text')).toContainText(/Carta de teste/);
+  await expect(page.locator('#aberta-video-cta')).toBeVisible();
+  await expect(page.locator('#btn-aberta-replay')).toBeVisible();
 });
 
 test('placeholders não entregam dica (só a carta tem)', async ({ page }) => {
@@ -100,6 +100,7 @@ test('#/carta/aberta com carta salva mostra parágrafos + CTA do vídeo', async 
   await expect(page.locator('#carta-aberta-cursor')).toBeHidden();
   await expect(page.locator('#aberta-video-cta')).toBeVisible();
   await expect(page.locator('#btn-aberta-skip')).toBeHidden();
+  await expect(page.locator('#btn-aberta-replay')).toBeVisible();
   // tela única: hero/nav e footer somem nessa rota
   await expect(page.locator('body')).toHaveClass(/on-aberta/);
   await expect(page.locator('.hero')).toBeHidden();
@@ -108,4 +109,20 @@ test('#/carta/aberta com carta salva mostra parágrafos + CTA do vídeo', async 
   await expect(page.locator('#aberta-video-wrap')).toBeVisible();
   const vsrc = await page.locator('#aberta-video').getAttribute('src');
   expect(vsrc).toContain('pos-carta-final.mp4');
+});
+
+test('reviver cerimônia reencena suspense a partir da releitura', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      '5k-progress',
+      JSON.stringify({ frags: { 1: 'a', 2: 'b', 3: 'c', 4: 'd' }, carta: 'p1\\n\\np2', done: true })
+    );
+  });
+  await page.goto('/#/carta/aberta');
+  await expect(page.locator('#btn-aberta-replay')).toBeVisible();
+  await page.locator('#btn-aberta-replay').click();
+  // suspense de 5s: cursor piscando, texto ainda vazio, skip volta à cena
+  await expect(page.locator('#carta-aberta-cursor')).toBeVisible();
+  await expect(page.locator('#btn-aberta-skip')).toBeHidden();
+  expect(await page.locator('#carta-aberta-text').evaluate((el) => el.textContent)).toBe('');
 });

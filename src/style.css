@@ -103,8 +103,8 @@ body.on-aberta .hero, body.on-aberta footer { display: none; }
   color: #e8e2d5;
   width: 100%;
 }
-.aberta-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 2rem; }
-#btn-aberta-skip, #btn-aberta-sound.ghost {
+.aberta-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 2rem; justify-content: center; }
+#btn-aberta-skip, #btn-aberta-sound.ghost, #btn-aberta-replay.ghost {
   background: transparent;
   border: 1px solid #30363d;
   color: #9aa4b2;
