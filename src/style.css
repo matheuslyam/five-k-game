@@ -152,6 +152,10 @@ body.on-aberta .hero, body.on-aberta footer { display: none; }
   overflow-wrap: break-word;
 }
 .aberta-block.spacer { line-height: 1; min-height: 0.5em; }
+/* PORQUE: o split(/\n\s*\n/) consome o separador — sem esta margem os
+   parágrafos colam (a linha em branco do pre-wrap antigo some). 1.9em
+   repõe o respiro espelhando o line-height dos blocos. */
+.aberta-block + .aberta-block { margin-top: 1.9em; }
 .aberta-block.sig {
   display: block;
   color: var(--yellow);
