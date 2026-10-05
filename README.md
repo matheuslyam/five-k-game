@@ -3,7 +3,6 @@
 Mini-game enigma estilo CTF para comemorar 5k follows no Instagram.
 
 Jogue em: `https://lyam.dev.br/five-k-game/`
-Repo público: `https://github.com/matheuslyam/five-k-game.git`
 
 ## Como jogar
 
@@ -11,41 +10,18 @@ Repo público: `https://github.com/matheuslyam/five-k-game.git`
 2. Digite seu chute no campo da flag e clique Validar.
 3. Só minúsculas, sem espaços no início/fim. MAIÚSCULA, com espaços e minúscula valem o mesmo.
 4. Progresso salva no seu navegador (`x/5`). Ordem 1-4 é livre, a Final abre com 4/4.
-5. Travou? Abra a dica H1, depois H2. A H3 forte sai no Vídeo 2.
+5. Travou? Abra a dica H1, depois H2.
 
 Flag 0 tutorial vem preenchida com `5k{bem-vindo}` — valide para aprender o loop em <60s.
 
-## A carta (final)
-
-Com os 4 frags, a página **Carta** desbloqueia a tela dedicada `#/carta/aberta`: fade escuro, boot lines, a carta se escreve em typewriter com música e som de datilografia, e no fim surge o vídeo pós-carta. Som começa ligado (com toggle `♪`); `↻ Reviver cerimônia` reencena quando quiser rever. Sem carta salva, a rota volta para o form.
-
-## No celular (90% do público)
+## No celular
 
 - Use o botão **Espelho** quando a flag pedir DevTools (Header/Cookie). Ele mostra na tela o que o PC veria no Network/Application.
-- No PC use Chrome DevTools normalmente. No celular, Kiwi Browser ou Chrome modo desktop ajudam.
 - Teclado só abre com toque real. Se não abrir, toque de novo no campo (iOS bloqueia foco programático).
 
 ## Placar
 
 Sem leaderboard dentro do jogo. Marque progresso com print/story e marque o autor.
-Placar oficial aparece no Vídeo 2, hall da fama no Vídeo 3 (dia dos 5k).
-
-## Rodar local (dev, sem segredos reais)
-
-```bash
-cp .env.example .env
-# preencha com valores FAKE locais, nunca os reais de prod
-npm i
-npm run dev
-# uma vez, para os testes e2e:
-npx playwright install chromium
-```
-
-Respostas reais vivem só em `.env` local + Vercel env de prod. Nunca são commitadas.
-
-## Contribuindo
-
-Repo solo do autor — sem PRs externos. Achou bypass ou bug? Reporte via DM (ver `SECURITY.md`), não abra issue com spoiler antes do Vídeo 3.
 
 ## Licença
 
@@ -53,12 +29,4 @@ MIT — ver `LICENSE`.
 
 ## Privacidade
 
-Logs anônimos de jogabilidade (acerto/erro por flag, sem IP cru, sem chute cru). Ver `docs/OPERACAO.md`.
-
-## Série
-
-- V1 Lançamento: o que é CTF + hints audits 07/09.
-- V2 Meio: placar + hint da mais travada.
-- V3 Solução: resolução + carta + nomes.
-
-Ver desenho completo em `SPEC.md` e descoberta passo a passo em `docs/ENIGMA.md`.
+Logs anônimos de jogabilidade (acerto/erro por flag, sem IP cru, sem chute cru).
