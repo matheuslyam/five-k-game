@@ -95,8 +95,11 @@ test('#/carta/aberta com carta salva mostra parágrafos + CTA do vídeo', async 
   });
   await page.goto('/#/carta/aberta');
   await expect(page.locator('#page-carta-aberta')).toBeVisible();
-  // decode: \\n escapado virou quebra real com parágrafo preservado
-  expect(await page.locator('#carta-aberta-text').evaluate((el) => el.textContent)).toContain('p1\n\np2');
+  // decode: \\n escapado virou blocos de parágrafo (divs separadas, não
+  // uma string com \n — o textContent do container não tem as quebras)
+  await expect(page.locator('#carta-aberta-text .aberta-block')).toHaveCount(2);
+  await expect(page.locator('#carta-aberta-text .aberta-block').nth(0)).toHaveText('p1');
+  await expect(page.locator('#carta-aberta-text .aberta-block').nth(1)).toHaveText('p2');
   await expect(page.locator('#carta-aberta-cursor')).toBeHidden();
   await expect(page.locator('#aberta-video-cta')).toBeVisible();
   await expect(page.locator('#btn-aberta-skip')).toBeHidden();
@@ -121,8 +124,9 @@ test('reviver cerimônia reencena suspense a partir da releitura', async ({ page
   await page.goto('/#/carta/aberta');
   await expect(page.locator('#btn-aberta-replay')).toBeVisible();
   await page.locator('#btn-aberta-replay').click();
-  // suspense de 5s: cursor piscando, texto ainda vazio, skip volta à cena
+  // suspense de 5s: boot lines do knight sobem, cursor parado, texto vazio
   await expect(page.locator('#carta-aberta-cursor')).toBeVisible();
+  await expect(page.locator('#aberta-boot .aberta-boot-line.show').first()).toBeVisible();
   await expect(page.locator('#btn-aberta-skip')).toBeHidden();
   expect(await page.locator('#carta-aberta-text').evaluate((el) => el.textContent)).toBe('');
 });

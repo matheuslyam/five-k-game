@@ -1,27 +1,45 @@
-:root { color-scheme: dark; }
+:root {
+  color-scheme: dark;
+  --bg: #09090b;
+  --surface: #111113;
+  --border: #222226;
+  --green: #4ade80;
+  --text: #e4e4e7;
+  --muted: #52525b;
+  --yellow: #facc15;
+  --red-soft: #ffa198;
+  --blue-btn: #1f6feb;
+}
 * { box-sizing: border-box; }
+/* PORQUE: @font-face mora no <style> do index.html com href ./fonts/... —
+   relativo ao documento funciona em dev, preview e atrás do proxy
+   /five-k-game/; dentro do CSS empacotado o relativo quebraria. */
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: #0b0e14;
-  color: #e6edf3;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--bg);
+  color: var(--text);
 }
 .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
-.hero h1 { margin: 0.2em 0; }
-.kicker { color: #7ee787; margin: 0; }
-.sub { color: #9aa4b2; }
-.fmt, .tiny { color: #8b949e; font-size: 0.9em; }
+.hero h1 { margin: 0.2em 0; font-weight: 500; letter-spacing: -0.01em; }
+.kicker { color: var(--green); margin: 0; }
+.sub { color: var(--muted); }
+.fmt, .tiny { color: var(--muted); font-size: 0.9em; }
 .card {
-  background: #11161f;
-  border: 1px solid #212b3a;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
   margin: 12px 0;
 }
-.tag { font-size: 0.75em; color: #9aa4b2; }
+.card h2 { font-weight: 500; }
+/* PORQUE: show() foca o h2 a cada troca de rota — anel discreto em vez do
+   outline padrão do browser, que parecia caixa de seleção. */
+h2:focus { outline: 1px dashed var(--border); outline-offset: 6px; }
+.tag { font-size: 0.75em; color: var(--muted); }
 code, pre {
-  background: #0d1117;
-  border: 1px solid #212b3a;
+  background: #000;
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 2px 6px;
   word-break: break-all;
@@ -34,90 +52,133 @@ input {
   font-size: 16px; /* >=16px: evita zoom iOS */
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid #30363d;
-  background: #0d1117;
-  color: #e6edf3;
+  border: 1px solid var(--border);
+  background: #000;
+  color: var(--text);
+  caret-color: var(--green);
+  font-family: inherit;
 }
+input:focus { outline: none; border-color: var(--green); }
 button {
   min-height: 48px; /* alvo de toque */
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid #30363d;
-  background: #1f6feb;
-  color: #fff;
-  font-weight: 600;
+  border: 1px solid var(--green);
+  background: var(--green);
+  color: #09090b;
+  font-family: inherit;
+  font-weight: 500;
   cursor: pointer;
 }
 button:active { transform: translateY(1px); }
+button:disabled { opacity: 0.55; cursor: default; }
 .row { margin-top: 10px; }
 .msg { min-height: 1.4em; }
-.msg.ok { color: #7ee787; }
-.msg.err { color: #ffa198; }
-.frag { color: #79c0ff; }
-.final { border-color: #7ee787; }
+.msg.ok { color: var(--green); }
+.msg.err { color: var(--red-soft); }
+.frag { color: var(--yellow); }
+.final { border-color: var(--green); }
 .gamenav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.gamenav a { color: #79c0ff; text-decoration: none; padding: 8px 10px; border: 1px solid #212b3a; border-radius: 8px; }
-.gamenav a[aria-current="page"] { color: #0b0e14; background: #7ee787; border-color: #7ee787; font-weight: 700; }
-.copy { margin-top: 8px; background: #0d1117; }
+.gamenav a { color: var(--green); text-decoration: none; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; }
+.gamenav a[aria-current="page"] { color: #09090b; background: var(--green); border-color: var(--green); font-weight: 500; }
+.copy { margin-top: 8px; background: transparent; color: var(--text); border-color: var(--border); }
 .page[hidden] { display: none; }
-#carta { border-top: 1px dashed #30363d; margin-top: 12px; padding-top: 12px; }
+#carta { border-top: 1px dashed var(--border); margin-top: 12px; padding-top: 12px; }
 #carta-text { white-space: pre-line; }
 #pos-carta-video { width: 100%; max-height: 70vh; background: #000; border-radius: 8px; }
-.selo { color: #8b949e; font-size: 0.9em; }
+.selo { color: var(--muted); font-size: 0.9em; }
 .selo-img { vertical-align: -1px; }
-footer { margin: 24px 0; color: #8b949e; }
+footer { margin: 24px 0; color: var(--muted); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
-/* Cerimônia da carta: tela única, fundo escuro minimalista, só o texto. */
-body.on-aberta { background: #05070b; }
+/* Cerimônia da carta: terminal fullscreen, linguagem do knight. */
+body.on-aberta { background: #000; }
 body.on-aberta .wrap { max-width: none; padding: 0; }
 body.on-aberta .hero, body.on-aberta footer { display: none; }
-.page.carta-aberta { background: #05070b; }
+.page.carta-aberta { background: #000; }
 .aberta-stage {
+  position: relative;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 20vh 20px 18vh;
-  max-width: 40rem;
+  padding: 16vh 20px 18vh;
+  max-width: 680px;
   margin: 0 auto;
+  background: var(--bg);
+  box-shadow: 0 0 80px rgba(0,0,0,0.9);
   opacity: 0;
+}
+/* scanlines só na aberta: leitura longa das flags não paga esse custo */
+.aberta-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.04) 3px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+  pointer-events: none;
 }
 .aberta-stage.aberta-fade { animation: aberta-fadein 2s ease-out forwards; }
 @keyframes aberta-fadein { from { opacity: 0; } to { opacity: 1; } }
+#aberta-boot { width: 100%; margin-bottom: 2rem; }
+.aberta-boot-line {
+  font-size: 12px;
+  line-height: 2.1;
+  color: var(--green);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.aberta-boot-line.show { opacity: 1; }
 .aberta-cursor {
   font-size: 2rem;
-  color: #7ee787;
+  color: var(--green);
   margin: 0;
   min-height: 2.4em;
   animation: aberta-blink 1s steps(2) infinite;
 }
 @keyframes aberta-blink { 50% { opacity: 0; } }
 #carta-aberta-text {
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.15rem;
-  line-height: 1.9;
-  color: #e8e2d5;
   width: 100%;
+  font-size: 14px;
+  line-height: 1.95;
+  font-weight: 300;
+  color: var(--text);
+  overflow-wrap: break-word;
+}
+.aberta-block.spacer { line-height: 1; min-height: 0.5em; }
+.aberta-block.sig {
+  display: block;
+  color: var(--yellow);
+  margin-top: 32px;
+  letter-spacing: 0.12em;
+  animation: aberta-fadein 1.2s ease both;
+}
+.aberta-inline-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: rgba(228, 228, 231, 0.5);
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: aberta-blink 1s steps(2) infinite;
 }
 .aberta-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 2rem; justify-content: center; }
 #btn-aberta-skip, #btn-aberta-sound.ghost, #btn-aberta-replay.ghost {
   background: transparent;
-  border: 1px solid #30363d;
-  color: #9aa4b2;
+  border: 1px solid var(--border);
+  color: var(--muted);
   min-height: 48px;
 }
 #aberta-video-cta { margin-top: 2.5rem; }
 #aberta-video-cta button { min-height: 56px; font-size: 1.05rem; padding: 14px 28px; }
 #aberta-video-wrap { width: 100%; margin-top: 1.5rem; }
 #aberta-video { width: 100%; max-height: 70vh; background: #000; border-radius: 8px; }
-@media (prefers-reduced-motion: reduce) {
-  .aberta-stage.aberta-fade { animation: none; opacity: 1; }
-  .aberta-cursor { animation: none; }
-}
 @media (max-width: 480px) {
-  form { flex-direction: column; position: sticky; bottom: 0; background: #11161f; padding-bottom: 4px; }
+  form { flex-direction: column; position: sticky; bottom: 0; background: var(--surface); padding-bottom: 4px; }
 }
