@@ -95,11 +95,19 @@ Ordem:
 4. Só então: `normalize(guess) = trim().toLowerCase()`, `sha256`, `timingSafeEqual` com `RESP_HASH_*`.
 5. Retorno: `{ok:true, frag}` ou `{ok:false}` genérico (sem "quase", sem primeira letra).
 
-Nunca usar rate-limit in-memory (bypass multinstância serverless).
+Nunca usar rate-limit in-memory como autoridade em prod (bypass multinstância serverless — cada isolate tem seu Map e cold starts zeram tudo).
 
-### `POST /api/unlock {frags:[s1,s2,s3,s4]}`
+## 2b. Vercel KV (rate-limit global + contadores)
 
-Valida 4 no server (constant-time), retorna `{ok:true, carta}` ou `{ok:false, falta:[ids]}`. Carta nunca vai no bundle.
+Criar em Dashboard → Storage → Create KV → conectar no projeto `five-k-game`. As envs `KV_REST_API_URL` + `KV_REST_API_TOKEN` entram sozinhas. O código usa KV quando elas existem e cai para memória (dev local, fail-open com log) quando não.
+
+- Padrão: `INCR 5k:rl:<ipHash>` + `EXPIRE 60s` (janela fixa), contadores `5k:stats:*` para o travômetro. Chave é hash de IP — IP cru nunca encosta no KV.
+- KV guarda só contadores anônimos (zero segredo): pode ficar ligado em Preview também, diferente das envs de segredo (Production apenas).
+- Confirmar free tier e ligar alerta de uso na criação; se viralizar além da cota, o fallback em memória segura o jogo no ar.
+
+### `POST /api/unlock {key: "frag1-frag2-frag3-frag4"}`
+
+Valida 4 no server (constant-time), retorna `{ok:true, carta}` ou `{ok:false, falta:[ids]}`. Formato legado `{frags:[...]}` é rejeitado com 400 por design. Carta nunca vai no bundle.
 
 ### `GET /api/headers`
 

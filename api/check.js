@@ -1,4 +1,4 @@
-import { config, normalizeAnswer, sha256hex, timingEqualHex, json, rateLimited, clientIp, logLine, isProd, missingProdEnv } from './_lib.js';
+import { config, normalizeAnswer, sha256hex, timingEqualHex, json, rateLimited, countEvent, clientIp, logLine, isProd, missingProdEnv } from './_lib.js';
 
 // PORQUE: ordem barata->cara evita gastar crypto e vazar timing antes de filtrar spam/shape.
 export default async function handler(req, res) {
@@ -11,9 +11,10 @@ export default async function handler(req, res) {
     return json(res, 500, { ok: false });
   }
 
-  const { limited } = rateLimited(ip, 10, 60_000);
+  const { limited } = await rateLimited(ip, 10, 60_000);
   if (limited) {
     logLine('check', { ip, ms: Date.now() - t0, limited: true });
+    await countEvent('429');
     res.setHeader('retry-after', '60');
     return json(res, 429, { ok: false, error: 'rate' });
   }
@@ -48,6 +49,10 @@ export default async function handler(req, res) {
     guessPrefix: got.slice(0, 8)
   });
 
-  if (!ok) return json(res, 200, { ok: false });
+  if (!ok) {
+    await countEvent('check:' + id + ':fail');
+    return json(res, 200, { ok: false });
+  }
+  await countEvent('check:' + id + ':ok');
   return json(res, 200, { ok: true, frag: cfg.frags[id] });
 }

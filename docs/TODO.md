@@ -5,11 +5,11 @@
 
 ## Infra / Vercel
 
-- [ ] TODO: criar projeto `five-k-game` na Vercel a partir de `https://github.com/matheuslyam/five-k-game.git` (agora desbloqueado — `vercel.json` mínimo já existe no repo).
-- [ ] TODO: criar/ligar Vercel KV (ou Upstash Redis) ao projeto para rate-limit + contadores.
-- [ ] TODO: configurar envs prod no projeto B: `RESP_HASH_1..4`, `FRAG_1..4` (novos, prod), `CARTA_TEXT` (placeholder por enquanto), `ADMIN_TOKEN`, `IP_SALT`.
-- [ ] TODO: adicionar rewrites `/five-k-game/*` no `vercel.json` do portfólio apontando para a URL do projeto B + redirect trailing slash. Redeploy portfólio. Testar em prod.
-- [ ] TODO: testar `X-Flag` e `POST /api/*` através do proxy `lyam.dev.br/five-k-game/` em aba anônima.
+- [x] Projeto `five-k-game` na Vercel criado a partir deste repo.
+- [x] Envs prod configuradas (`RESP_HASH_1..4`, `FRAG_1..4` rotacionados, `CARTA_TEXT` one-liner, `ADMIN_TOKEN`, `IP_SALT`).
+- [x] Rewrites `/five-k-game/*` no portfólio + redirect trailing slash + redeploy.
+- [x] `X-Flag` e `POST /api/*` testados através do proxy em aba anônima (Espelho é o canônico; header pode não sobreviver ao proxy).
+- [ ] TODO: criar/ligar Vercel KV ao projeto (código pronto em `api/_lib.js`, usa as envs `KV_REST_API_URL`/`KV_REST_API_TOKEN` quando presentes).
 
 ## Chaves / enigma (ELOS definido 04/10/2026 — respostas só em `.env`)
 
@@ -17,8 +17,9 @@
 - [x] Flag 2: `senha=cafe123`, `sal1=sal-grosso`, `sal2` no alt da imagem + Espelho.
 - [x] Flag 3: valor do audit 09, via `/api` (nunca `vercel.json`).
 - [x] Flag 4: cookie base64 vira pista + nome do golpe em inglês (audit 07).
-- [x] Carta V3 oficial (só `.env` local + Vercel env) + vídeo pós-carta com easter egg.
-- [ ] TODO: seed prod (hashes + `FRAG_*` novos + `CARTA_TEXT` + demais envs no projeto B).
+- [x] Carta V3 oficial (só `.env` local + Vercel env one-liner) + vídeo pós-carta + cerimônia `#/carta/aberta` (boot, typing, música, tick).
+- [x] Seed prod (hashes + `CARTA_TEXT` + demais envs no projeto B).
+- [ ] TODO (autor, antes do link na bio): confirmar `FRAG_*` de prod rotacionados — acertar 1 flag em prod deve devolver frag DIFERENTE dos placeholders públicos de `SPEC.md`/`QA-SEGURANCA` (se igual, gerar novos, colar na Vercel e redeploy).
 
 ## Frags visualização (descartar antes do prod)
 
@@ -36,11 +37,10 @@ FRAG_4=310353b5a0da185d
 ## Código (greenlight do autor — implementado, QA em prod)
 
 - [x] Scaffold Vite (`base:'./'`, `src/`, `api/`) — feito.
-- [x] Front (5 telas + Espelho + `textContent` + inputs `>=16px`) — feito.
-- [x] `/api/check`, `/api/unlock`, `/api/headers`, `/api/stats` na ordem barata->cara — feito (KV real pendente, memória no MVP).
-- [x] Testes: Vitest unit (`normalize`, `sha256`, `rate-limit`) + Playwright e2e (tutorial + padrão mobile) — 8 unit passando, build ok.
-- [ ] TODO: plugar Vercel KV real (trocar memória em `api/_lib.js`).
-- [ ] TODO: QA 15min mobile em prod (Chrome Android + Safari iOS + in-app Instagram) via `lyam.dev.br/five-k-game/` — só após criar projeto Vercel + rewrites portfólio.
+- [x] Front (telas + Espelho + `textContent` + inputs `>=16px`) + cerimônia terminal (reskin knight, sem gates de movimento por decisão do autor).
+- [x] `/api/check`, `/api/unlock`, `/api/headers`, `/api/stats` na ordem barata->cara + KV real quando ligado (memória só dev/fallback).
+- [x] Testes: Vitest unit + Playwright e2e (mobile+desktop) verdes; `npm audit` limpo (vite 7 + vitest 4).
+- [ ] TODO: QA 15min mobile em prod (Chrome Android + Safari iOS + in-app Instagram) via `lyam.dev.br/five-k-game/` antes do link na bio.
 
 ## Docs
 

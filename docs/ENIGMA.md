@@ -63,8 +63,8 @@ Ordem 1-4 livre. Final bloqueada até 4/4. Progresso em `localStorage` + recuper
 ## Flag 5 — Final
 
 - **Vê:** 4 slots + campo chave + "falta: N".
-- **Faz:** monta `frag1-frag2-frag3-frag4` -> Desbloquear -> carta se escreve (typewriter) -> vídeo aparece ao concluir.
-- **Regras:** mostra qual falta, permite re-colar frag se limpou storage, normalize igual às outras. Carta + vídeo persistem para rever.
+- **Faz:** monta `frag1-frag2-frag3-frag4` -> Desbloquear -> tela dedicada da carta (fade, boot, typewriter com música) -> vídeo aparece ao concluir. Sem carta salva, a rota da carta volta para o form; depois de desbloqueada, `#/carta` redireciona para a cerimônia.
+- **Regras:** mostra qual falta, permite re-colar frag se limpou storage, normalize igual às outras. Carta + vídeo persistem para rever (`↻ Reviver cerimônia` reencena).
 - **Gate anti-pulo:** mesmo com 1 frag vazado, precisa das 4. Gabarito total vazado é inevitável sem auth — mitigado por moderação manual + frags alta entropia (não chutáveis).
 
 ## Calibragem medium

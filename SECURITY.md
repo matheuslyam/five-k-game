@@ -13,7 +13,8 @@ Sem bounty. Sem CVE para lógica de jogo (gabarito vazado por design sem auth).
 
 - F12 aberto, view-source, DevTools: por design o bundle não contém segredos.
 - Resolver mais rápido via console/automação após descobrir as keys: aceito (velocidade é inevitável).
-- BurpSuite/Intruder gratuito contra `/api`: rate-limit 10/min/IP + `no-store`. Reporte bypass de rate-limit.
+- BurpSuite/Intruder gratuito contra `/api`: rate-limit global 10/min/IP via KV + `no-store` (sem KV ligado, vale o limite por instância — ver `docs/OPERACAO.md`). Reporte bypass de rate-limit.
+- Oráculo `falta:[ids]` no unlock: aceito (64 bits/frag, só ajuda quem trocou a ordem).
 
 ## O que é vulnerabilidade real
 

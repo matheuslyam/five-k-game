@@ -1,9 +1,10 @@
-# SPEC — five-k-game v0.1 (pré-build, sem código)
+# SPEC — five-k-game (implementado; este doc é o desenho original)
 
-> Status: documentação. Nenhum código de jogo/API foi implementado ainda.
+> Status 05/10/2026: jogo implementado e em produção. Abaixo, o desenho
+> pré-build preservado + notas onde a implementação divergiu.
 > Repo público: https://github.com/matheuslyam/five-k-game.git
-> Stack decidida: Vite (confirmado pelo autor).
-> Objetivo: deixar o desenho redondo antes de codar. Prioridade acima de código.
+> Stack: Vite + Vercel serverless (confirmado).
+> Divergências implementadas: sem AES-GCM (server usa `SHA-256 + timingSafeEqual` + frags de alta entropia via `/api` — brute offline impossível, online morre no 429/KV); sem Vercel KV no MVP (código pronto, ligar no dashboard); cerimônia final em `#/carta/aberta` (boot, typing por blocos, música, tick, vídeo); sem gates de `prefers-reduced-motion` (decisão do autor, paridade com o knight game).
 
 ## 1. Visão
 

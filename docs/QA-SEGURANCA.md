@@ -4,6 +4,14 @@
 > Veredito: **REPROVADO para lançamento** — 1 achado crítico ativo em produção (item 1). Todo o resto é corrigível antes do Vídeo 1.
 > Metodologia: revisão estática + harness Node executando os handlers reais (`api/*.js`, 42 asserts) + sondas `curl` em produção + suítes do repo. Nada foi "achado no olho": cada item crítico tem prova de exploit reproduzível (ver §8).
 
+## 0. Addendum 05/10/2026 — estado atual (não reescreve a história acima)
+
+- Itens 1, 2, 4, 5, 6, 8, 10 com fix mergeado (fail-closed, anti-spoof XFF, `Retry-After`, `CDN-Cache-Control`, Espelho canônico, leak-check funcional, prereq playwright). Item 9 aceito por design.
+- Item 3 (deps): `vite@^7` + `vitest@^4`, `npm audit` limpo, suítes verdes.
+- Item 1 residual: confirmar `FRAG_*` de prod rotacionados (ver `docs/TODO.md`).
+- Pós-03/10 (fora do escopo do QA original, coberto pela suite do repo): cerimônia `#/carta/aberta`, reskin knight, KV global em `rateLimited` + contadores reais no `/api/stats` (ligar KV no dashboard), contratos `/api/headers` + `/api/stats` com testes no repo, remoção dos gates `reduce` (decisão do autor).
+- Antes do link na bio: ligar KV, confirmar rotação dos frags, QA mobile 15min.
+
 ## 1. Achados (ordenados por severidade)
 
 | # | Achado | Sev | Ator capaz | Ferramenta da prova | Status |

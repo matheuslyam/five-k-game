@@ -15,6 +15,10 @@ Repo público: `https://github.com/matheuslyam/five-k-game.git`
 
 Flag 0 tutorial vem preenchida com `5k{bem-vindo}` — valide para aprender o loop em <60s.
 
+## A carta (final)
+
+Com os 4 frags, a página **Carta** desbloqueia a tela dedicada `#/carta/aberta`: fade escuro, boot lines, a carta se escreve em typewriter com música e som de datilografia, e no fim surge o vídeo pós-carta. Som começa ligado (com toggle `♪`); `↻ Reviver cerimônia` reencena quando quiser rever. Sem carta salva, a rota volta para o form.
+
 ## No celular (90% do público)
 
 - Use o botão **Espelho** quando a flag pedir DevTools (Header/Cookie). Ele mostra na tela o que o PC veria no Network/Application.
@@ -38,6 +42,14 @@ npx playwright install chromium
 ```
 
 Respostas reais vivem só em `.env` local + Vercel env de prod. Nunca são commitadas.
+
+## Contribuindo
+
+Repo solo do autor — sem PRs externos. Achou bypass ou bug? Reporte via DM (ver `SECURITY.md`), não abra issue com spoiler antes do Vídeo 3.
+
+## Licença
+
+MIT — ver `LICENSE`.
 
 ## Privacidade
 
