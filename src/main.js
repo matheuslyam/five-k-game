@@ -16,15 +16,16 @@ let fullCarta = '';
 // PORQUE: a tela dedicada #/carta/aberta é a cerimônia final (fade → typebar
 // 3.5s → typing + música fade-in 5s + tick → link do vídeo → ended = nada).
 // Tudo aqui é apresentação; autoridade continua no /api/unlock + guard de rota.
-const ABERTA_SUSPENSE_MS = 3500;
+const ABERTA_SUSPENSE_MS = 5000;
 const ABERTA_MUSIC_FADE_MS = 5000;
 const ABERTA_MUSIC_VOL = 0.5;
-const ABERTA_TICK_EVERY = 2;
+const ABERTA_TICK_VOL = 0.12;
 const abertaStageEl = document.getElementById('aberta-stage');
 const abertaCursorEl = document.getElementById('carta-aberta-cursor');
 const abertaTextEl = document.getElementById('carta-aberta-text');
 const abertaSkipBtn = document.getElementById('btn-aberta-skip');
 const abertaSoundBtn = document.getElementById('btn-aberta-sound');
+const abertaReplayBtn = document.getElementById('btn-aberta-replay');
 const abertaCtaEl = document.getElementById('aberta-video-cta');
 const abertaVideoBtn = document.getElementById('btn-aberta-video');
 const abertaVideoWrap = document.getElementById('aberta-video-wrap');
@@ -216,7 +217,23 @@ async function handleFinal(form, input) {
       refresh();
       freshCeremony = true;
       setMsg(form, 'Carta aberta!', true);
-      window.location.hash = '#/carta/aberta';
+      // PORQUE: autoplay (Safari/in-app) só libera áudio dentro do gesto do
+      // clique — este play() MUTADO é sempre permitido e já baixa os ~3,6MB
+      // durante o suspense; o unmute + fade acontece junto do typing.
+      try {
+        if (bgMusicEl) {
+          bgMusicEl.muted = true;
+          bgMusicEl.volume = 0;
+          const p = bgMusicEl.play();
+          if (p && typeof p.catch === 'function') p.catch(() => {});
+        }
+        if (tickEl) tickEl.load();
+      } catch {
+      }
+      // PORQUE: atribuição de hash igual é no-op (sem hashchange) — se o
+      // jogador já estiver na aberta, reencena direto em vez de silenciar.
+      if (currentRoute() === '#/carta/aberta') enterAberta();
+      else window.location.hash = '#/carta/aberta';
     } else {
       setMsg(form, data.falta ? 'Falta: ' + data.falta.join(', ') : 'Chave incompleta.', false);
     }
@@ -238,8 +255,13 @@ function clearAbertaTimers() {
 
 function teardownAberta() {
   clearAbertaTimers();
+  stopTickLoop();
   try {
     bgMusicEl?.pause();
+  } catch {
+  }
+  try {
+    abertaVideoEl?.pause();
   } catch {
   }
 }
@@ -250,9 +272,9 @@ function setSoundLabel() {
   abertaSoundBtn.textContent = playing ? '♪ música: on' : '♪ música: off';
 }
 
-// PORQUE: o play() após o suspense (3.5s fora do gesto) pode cair no
-// bloqueio de autoplay do in-app/Safari; falhar silencioso + toggle manual
-// mantém a cerimônia intacta sem travar o typing.
+// PORQUE: o elemento já tocou (mutado) dentro do gesto do unlock, então
+// aqui o unmute + fade-in de 5s é permitido — música nasce ON por padrão e
+// o toggle existe só como exceção, não como partida.
 function startAbertaMusic() {
   if (!bgMusicEl || reducedMotion()) {
     setSoundLabel();
@@ -260,6 +282,7 @@ function startAbertaMusic() {
   }
   clearInterval(abertaMusicRamp);
   try {
+    bgMusicEl.muted = false;
     bgMusicEl.volume = 0;
     const p = bgMusicEl.play();
     if (p && typeof p.catch === 'function') p.catch(() => setSoundLabel());
@@ -283,16 +306,24 @@ function startAbertaMusic() {
   }
 }
 
-// PORQUE: reiniciar o clack a cada N chars funciona tanto para sample curto
-// quanto para gravação longa (só o transiente inicial repete) e evita
-// saturar o mobile com um play por char.
-function playTick() {
+// PORQUE: um loop contínuo amarrado ao typing sobrevive no iOS/Safari,
+// onde play() por char via setInterval fora de gesto é bloqueado e ainda
+// gera churn de promises a cada ~36ms.
+function startTickLoop() {
   if (!tickEl || reducedMotion()) return;
   try {
-    tickEl.volume = 0.12;
+    tickEl.loop = true;
+    tickEl.volume = ABERTA_TICK_VOL;
     tickEl.currentTime = 0;
     const p = tickEl.play();
     if (p && typeof p.catch === 'function') p.catch(() => {});
+  } catch {
+  }
+}
+
+function stopTickLoop() {
+  try {
+    tickEl?.pause();
   } catch {
   }
 }
@@ -302,11 +333,13 @@ function finishAbertaTyping() {
   clearInterval(abertaTypingTimer);
   abertaSuspenseTimer = 0;
   abertaTypingTimer = 0;
+  stopTickLoop();
   // o fade da música continua em paralelo — a ambiência não morre no fim.
   if (abertaTextEl) abertaTextEl.textContent = abertaFull;
   if (abertaCursorEl) abertaCursorEl.hidden = true;
   if (abertaSkipBtn) abertaSkipBtn.hidden = true;
   if (abertaSoundBtn) abertaSoundBtn.hidden = false;
+  if (abertaReplayBtn) abertaReplayBtn.hidden = false;
   if (abertaCtaEl) abertaCtaEl.hidden = false;
   setSoundLabel();
   abertaCtaEl?.scrollIntoView({ block: 'nearest' });
@@ -318,17 +351,18 @@ function startAbertaTyping() {
   if (abertaCursorEl) abertaCursorEl.hidden = true;
   if (abertaSkipBtn) abertaSkipBtn.hidden = false;
   if (abertaSoundBtn) abertaSoundBtn.hidden = false;
+  if (abertaReplayBtn) abertaReplayBtn.hidden = true;
   if (reducedMotion() || abertaFull.length === 0) {
     finishAbertaTyping();
     return;
   }
   startAbertaMusic();
+  startTickLoop();
   abertaTextEl.textContent = '';
   let i = 0;
   abertaTypingTimer = setInterval(() => {
     i += 1;
     abertaTextEl.textContent = abertaFull.slice(0, i);
-    if (i % ABERTA_TICK_EVERY === 0) playTick();
     if (i % 24 === 0) abertaTextEl.scrollIntoView({ block: 'end' });
     if (i >= abertaFull.length) finishAbertaTyping();
   }, TYPE_MS);
@@ -351,6 +385,7 @@ function enterAberta() {
   if (abertaCtaEl) abertaCtaEl.hidden = true;
   if (abertaSkipBtn) abertaSkipBtn.hidden = true;
   if (abertaSoundBtn) abertaSoundBtn.hidden = true;
+  if (abertaReplayBtn) abertaReplayBtn.hidden = true;
   // reinicia o fade lento a cada entrada
   abertaStageEl.classList.remove('aberta-fade');
   void abertaStageEl.offsetWidth;
@@ -365,6 +400,9 @@ function enterAberta() {
     if (abertaCursorEl) abertaCursorEl.hidden = true;
     if (abertaCtaEl) abertaCtaEl.hidden = false;
     if (abertaSoundBtn) abertaSoundBtn.hidden = false;
+    // PORQUE: releitura mostra o texto direto, mas a cerimônia continua
+    // disponível sob demanda — sem ela, voltar à carta seria beco sem saída.
+    if (abertaReplayBtn) abertaReplayBtn.hidden = false;
     setSoundLabel();
     return;
   }
@@ -416,7 +454,14 @@ function currentRoute() {
 }
 
 function show() {
-  const r = currentRoute();
+  let r = currentRoute();
+  // PORQUE: com a carta desbloqueada a página das flags virou beco sem saída
+  // de design — replace (não push) para o botão voltar não pingar entre as
+  // duas. Sem carta salva, #/carta segue normal (form de unlock).
+  if (r === '#/carta' && state.done && decodeCarta(state.carta)) {
+    history.replaceState(null, '', '#/carta/aberta');
+    r = '#/carta/aberta';
+  }
   document.querySelectorAll('.page').forEach((p) => {
     p.hidden = p.dataset.route !== r;
   });
@@ -540,6 +585,9 @@ abertaSoundBtn?.addEventListener('click', async () => {
     if (bgMusicEl.paused) {
       clearInterval(abertaMusicRamp);
       abertaMusicRamp = 0;
+      // PORQUE: o tap é gesto — aqui o start manual sempre é permitido,
+      // então o toggle também serve de partida quando o warmup falhou.
+      bgMusicEl.muted = false;
       bgMusicEl.volume = ABERTA_MUSIC_VOL;
       await bgMusicEl.play();
     } else {
@@ -550,9 +598,19 @@ abertaSoundBtn?.addEventListener('click', async () => {
   setSoundLabel();
 });
 
+abertaReplayBtn?.addEventListener('click', () => {
+  try {
+    abertaVideoEl?.pause();
+  } catch {
+  }
+  freshCeremony = true;
+  enterAberta();
+});
+
 abertaVideoBtn?.addEventListener('click', async () => {
   if (!abertaVideoWrap || !abertaVideoEl) return;
-  // PORQUE: o vídeo tem áudio próprio — a ambiência pausa para não brigar.
+  // PORQUE: o vídeo tem áudio próprio — música e tick pausam para não brigar.
+  stopTickLoop();
   try {
     bgMusicEl?.pause();
   } catch {
