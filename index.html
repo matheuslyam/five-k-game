@@ -6,6 +6,26 @@
   <title>five-k-game — escondi 5 flags</title>
   <meta name="description" content="Mini-game enigma estilo CTF para comemorar 5k follows. Ache 5 flags e abra a carta." />
   <link rel="stylesheet" href="./src/style.css" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="./fonts/jetbrains-mono-latin-400.woff2" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="./fonts/jetbrains-mono-latin-500.woff2" />
+  <style>
+    /* PORQUE: self-host (CSP-safe, offline) com path relativo ao documento —
+       vale em dev, preview e atrás do proxy /five-k-game/. */
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('./fonts/jetbrains-mono-latin-400.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('./fonts/jetbrains-mono-latin-500.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
 </head>
 <body>
   <main class="wrap">
@@ -149,6 +169,7 @@
     <section class="page carta-aberta" data-route="#/carta/aberta" id="page-carta-aberta" hidden>
       <div class="aberta-stage" id="aberta-stage">
         <h2 class="sr-only" tabindex="-1">A carta</h2>
+        <div id="aberta-boot" aria-hidden="true"></div>
         <p class="aberta-cursor" id="carta-aberta-cursor" aria-hidden="true" hidden>▍</p>
         <div id="carta-aberta-text" role="article" aria-label="Texto da carta"></div>
         <p class="row aberta-actions">

@@ -20,7 +20,17 @@ const ABERTA_SUSPENSE_MS = 5000;
 const ABERTA_MUSIC_FADE_MS = 5000;
 const ABERTA_MUSIC_VOL = 0.5;
 const ABERTA_TICK_VOL = 0.12;
+const ABERTA_TYPE_MS = 30;
+// PORQUE: o suspense de 5s ganha narrativa em vez de cursor parado —
+// boot lines temáticas no padrão do knight (gaps iguais aos de lá).
+const ABERTA_BOOT = [
+  '> chave 4/4 aceita.',
+  '> descriptografando carta...   OK',
+  '> ambiente preparado.          OK'
+];
+const ABERTA_BOOT_GAPS = [300, 900, 1500];
 const abertaStageEl = document.getElementById('aberta-stage');
+const abertaBootEl = document.getElementById('aberta-boot');
 const abertaCursorEl = document.getElementById('carta-aberta-cursor');
 const abertaTextEl = document.getElementById('carta-aberta-text');
 const abertaSkipBtn = document.getElementById('btn-aberta-skip');
@@ -36,11 +46,10 @@ let abertaSuspenseTimer = 0;
 let abertaTypingTimer = 0;
 let abertaMusicRamp = 0;
 let abertaFull = '';
+// PORQUE: decisão do autor 05/10/2026 — paridade com o knight game, que não
+// consulta prefers-reduced-motion: a cerimônia sempre encena. Quem quiser
+// pular usa Mostrar tudo / Reviver. (Movimento não é gateado; áudio nunca foi.)
 let freshCeremony = false;
-
-function reducedMotion() {
-  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-}
 
 const COOLDOWN_MS = 2000;
 
@@ -164,11 +173,6 @@ function typeCarta(text) {
   fullCarta = decodeCarta(text);
   cartaEl.hidden = false;
   if (posCartaEl) posCartaEl.hidden = true;
-  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced || fullCarta.length === 0) {
-    finishTyping();
-    return;
-  }
   cartaTextEl.textContent = '';
   if (skipBtn) skipBtn.hidden = false;
   let i = 0;
@@ -276,7 +280,7 @@ function setSoundLabel() {
 // aqui o unmute + fade-in de 5s é permitido — música nasce ON por padrão e
 // o toggle existe só como exceção, não como partida.
 function startAbertaMusic() {
-  if (!bgMusicEl || reducedMotion()) {
+  if (!bgMusicEl) {
     setSoundLabel();
     return;
   }
@@ -310,7 +314,7 @@ function startAbertaMusic() {
 // onde play() por char via setInterval fora de gesto é bloqueado e ainda
 // gera churn de promises a cada ~36ms.
 function startTickLoop() {
-  if (!tickEl || reducedMotion()) return;
+  if (!tickEl) return;
   try {
     tickEl.loop = true;
     tickEl.volume = ABERTA_TICK_VOL;
@@ -328,6 +332,48 @@ function stopTickLoop() {
   }
 }
 
+// PORQUE: typing por blocos no padrão MESSAGE do knight ([texto, pausa,
+// charMs]) — cada parágrafo tem ritmo próprio e linha vazia vira respiro.
+// Cursor inline acompanha o bloco atual; última linha vira tag amarela.
+// Tudo via textContent (regra XSS), skip preenche tudo de uma vez.
+let abertaInlineCursor = null;
+
+function abertaCursorNode() {
+  if (!abertaInlineCursor) {
+    abertaInlineCursor = document.createElement('span');
+    abertaInlineCursor.className = 'aberta-inline-cursor';
+    abertaInlineCursor.setAttribute('aria-hidden', 'true');
+  }
+  return abertaInlineCursor;
+}
+
+function splitBlocks(full) {
+  return String(full).split(/\n\s*\n/);
+}
+
+function buildBlock(text, isLast) {
+  const div = document.createElement('div');
+  if (!text) {
+    div.className = 'aberta-block spacer';
+    div.innerHTML = '&nbsp;';
+    return div;
+  }
+  div.className = 'aberta-block' + (isLast ? ' sig' : '');
+  return div;
+}
+
+function fillAllBlocks() {
+  if (!abertaTextEl) return;
+  abertaTextEl.textContent = '';
+  const blocks = splitBlocks(abertaFull);
+  blocks.forEach((t, i) => {
+    const div = buildBlock(t, i === blocks.length - 1);
+    if (t) div.textContent = t;
+    abertaTextEl.appendChild(div);
+  });
+  if (abertaInlineCursor) abertaInlineCursor.remove();
+}
+
 function finishAbertaTyping() {
   clearTimeout(abertaSuspenseTimer);
   clearInterval(abertaTypingTimer);
@@ -335,8 +381,9 @@ function finishAbertaTyping() {
   abertaTypingTimer = 0;
   stopTickLoop();
   // o fade da música continua em paralelo — a ambiência não morre no fim.
-  if (abertaTextEl) abertaTextEl.textContent = abertaFull;
+  fillAllBlocks();
   if (abertaCursorEl) abertaCursorEl.hidden = true;
+  if (abertaBootEl) abertaBootEl.hidden = true;
   if (abertaSkipBtn) abertaSkipBtn.hidden = true;
   if (abertaSoundBtn) abertaSoundBtn.hidden = false;
   if (abertaReplayBtn) abertaReplayBtn.hidden = false;
@@ -345,27 +392,71 @@ function finishAbertaTyping() {
   abertaCtaEl?.scrollIntoView({ block: 'nearest' });
 }
 
+async function runAbertaBoot() {
+  if (!abertaBootEl) return;
+  abertaBootEl.hidden = false;
+  abertaBootEl.textContent = '';
+  for (let i = 0; i < ABERTA_BOOT.length; i++) {
+    await new Promise((r) => { abertaSuspenseTimer = setTimeout(r, i === 0 ? ABERTA_BOOT_GAPS[0] : ABERTA_BOOT_GAPS[i] - ABERTA_BOOT_GAPS[i - 1]); });
+    if (!abertaSuspenseTimer && i > 0) return;
+    const el = document.createElement('div');
+    el.className = 'aberta-boot-line';
+    el.textContent = ABERTA_BOOT[i];
+    abertaBootEl.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+  }
+}
+
 function startAbertaTyping() {
   if (!abertaTextEl) return;
   clearAbertaTimers();
   if (abertaCursorEl) abertaCursorEl.hidden = true;
+  if (abertaBootEl) abertaBootEl.hidden = true;
   if (abertaSkipBtn) abertaSkipBtn.hidden = false;
   if (abertaSoundBtn) abertaSoundBtn.hidden = false;
   if (abertaReplayBtn) abertaReplayBtn.hidden = true;
-  if (reducedMotion() || abertaFull.length === 0) {
+  if (abertaFull.length === 0) {
     finishAbertaTyping();
     return;
   }
   startAbertaMusic();
   startTickLoop();
   abertaTextEl.textContent = '';
-  let i = 0;
-  abertaTypingTimer = setInterval(() => {
-    i += 1;
-    abertaTextEl.textContent = abertaFull.slice(0, i);
-    if (i % 24 === 0) abertaTextEl.scrollIntoView({ block: 'end' });
-    if (i >= abertaFull.length) finishAbertaTyping();
-  }, TYPE_MS);
+  const blocks = splitBlocks(abertaFull);
+  let bi = 0;
+  let ci = 0;
+  const appendBlock = (idx) => {
+    const div = buildBlock(blocks[idx], idx === blocks.length - 1);
+    abertaTextEl.appendChild(div);
+    div.appendChild(abertaCursorNode());
+    return div;
+  };
+  let current = appendBlock(0);
+  // PORQUE: passo único + pausa agendada entre blocos — sem ela o respiro
+  // entre parágrafos some e a carta vira datilografia sem ritmo.
+  const step = () => {
+    const text = blocks[bi];
+    ci += 1;
+    current.textContent = text.slice(0, ci);
+    current.appendChild(abertaCursorNode());
+    if (ci % 72 === 0) abertaTextEl.scrollIntoView({ block: 'end' });
+    if (ci < text.length) return;
+    bi += 1;
+    ci = 0;
+    clearInterval(abertaTypingTimer);
+    abertaTypingTimer = 0;
+    if (bi >= blocks.length) {
+      finishAbertaTyping();
+      return;
+    }
+    const pause = !blocks[bi] ? 350 : 150;
+    abertaSuspenseTimer = setTimeout(() => {
+      abertaSuspenseTimer = 0;
+      current = appendBlock(bi);
+      abertaTypingTimer = setInterval(step, ABERTA_TYPE_MS);
+    }, pause);
+  };
+  abertaTypingTimer = setInterval(step, ABERTA_TYPE_MS);
 }
 
 // PORQUE: a rota aberta é só vitrine — sem carta persistida (unlock real)
@@ -381,6 +472,10 @@ function enterAberta() {
   teardownAberta();
   abertaFull = carta;
   abertaTextEl.textContent = '';
+  if (abertaBootEl) {
+    abertaBootEl.textContent = '';
+    abertaBootEl.hidden = true;
+  }
   if (abertaVideoWrap) abertaVideoWrap.hidden = true;
   if (abertaCtaEl) abertaCtaEl.hidden = true;
   if (abertaSkipBtn) abertaSkipBtn.hidden = true;
@@ -392,11 +487,10 @@ function enterAberta() {
   abertaStageEl.classList.add('aberta-fade');
   window.scrollTo(0, 0);
 
-  const ceremony = freshCeremony && !reducedMotion();
+  const ceremony = freshCeremony;
   freshCeremony = false;
   if (!ceremony) {
-    abertaFull = carta;
-    if (abertaTextEl) abertaTextEl.textContent = abertaFull;
+    fillAllBlocks();
     if (abertaCursorEl) abertaCursorEl.hidden = true;
     if (abertaCtaEl) abertaCtaEl.hidden = false;
     if (abertaSoundBtn) abertaSoundBtn.hidden = false;
@@ -407,6 +501,7 @@ function enterAberta() {
     return;
   }
   if (abertaCursorEl) abertaCursorEl.hidden = false;
+  runAbertaBoot();
   abertaSuspenseTimer = setTimeout(() => {
     abertaSuspenseTimer = 0;
     startAbertaTyping();
